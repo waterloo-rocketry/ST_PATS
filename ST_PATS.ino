@@ -1,45 +1,49 @@
 #include <Wire.h>
 #include "display.h"
+#include "BigRedBee.h"
 #include <Adafruit_Sensor.h>
 #include <Adafruit_LSM303_U.h>
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial GPS_serial(10, 9); //RX, TX
+#define TIME_BETWEEN_UPDATES 1000 // in ms
 
-Adafruit_GPS GPS(&GPS_serial);
-Display display;
+unsigned long time_of_last_update = 0;
+
+SoftwareSerial GPS_serial(10, 9); //RX, TX
+Adafruit_GPS local_GPS(&GPS_serial);
 
 /* Assign a unique ID to this sensor at the same time */
-Adafruit_LSM303_Mag_Unified mag = Adafruit_LSM303_Mag_Unified(12345);
+Adafruit_LSM303_Mag_Unified compass = Adafruit_LSM303_Mag_Unified(12345);
+
+Display display;
 
 void setup(void) 
 {
+  
+  delay(250);
   Serial.begin(9600);
   Serial.println("ST PATS"); Serial.println("");
   
-  /* Initialise the sensor */
-  if(!mag.begin())
-  {
-    /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
-  }
-
+  
   display.begin();
   display.set_background();
   
-  GPS.begin(9600);
+  local_GPS.begin(9600);
   // turn on RMC (recommended minimum) and GGA (fix data) including altitude
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  local_GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   
   // Set the update rate
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_2HZ);   // 1 Hz update rate
+  local_GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
 
+  /* Initialise the sensor */
+  compass.begin();
+  
   useInterrupt();
 }
 
 SIGNAL(TIMER0_COMPA_vect) {
-  char c = GPS.read();
+  char c = local_GPS.read();
 }
 
 void useInterrupt() {
@@ -51,60 +55,62 @@ void useInterrupt() {
 
 void loop(void) 
 {
+  if(millis() - time_of_last_update > TIME_BETWEEN_UPDATES){
+    time_of_last_update = millis();
+    sensors_event_t event; 
+    compass.getEvent(&event);
   
-  sensors_event_t event; 
-  mag.getEvent(&event);
+    // Calculate the angle of the vector y,x
+    float heading = (atan2(event.magnetic.y,event.magnetic.x) * 180) / PI;
   
-  float Pi = 3.14159;
-  
-  // Calculate the angle of the vector y,x
-  float heading = (atan2(event.magnetic.y,event.magnetic.x) * 180) / Pi;
-  
-  // Normalize to 0-360
-  if (heading < 0)
-  {
-    heading = 360 + heading;
-  }
-  display.draw_arrow(heading);
-  Serial.print("Compass Heading: ");
-  Serial.println(heading);
-  
-  char c = GPS.read();
+    // Normalize to 0-360
+    if (heading < 0)
+    {
+     heading = 360 + heading;
+    }
+    
+    display.draw_arrow(heading);
+    Serial.print("Compass Heading: ");
+    Serial.println(heading);
+
+  //display.write_data(syst, gyro, accel, mag, 48.2382, 123.659);
+  char c = local_GPS.read();
   
   // if a sentence is received, we can check the checksum, parse it...
-  if (GPS.newNMEAreceived()) {
+  if (local_GPS.newNMEAreceived()) {
   
-    if (GPS.parse(GPS.lastNMEA())){
+    if (local_GPS.parse(local_GPS.lastNMEA())){
     
     Serial.print("\nTime: ");
-    Serial.print(GPS.hour, DEC); Serial.print(':');
-    Serial.print(GPS.minute, DEC); Serial.print(':');
-    Serial.print(GPS.seconds, DEC); Serial.print('.');
-    Serial.println(GPS.milliseconds);
+    Serial.print(local_GPS.hour, DEC); Serial.print(':');
+    Serial.print(local_GPS.minute, DEC); Serial.print(':');
+    Serial.print(local_GPS.seconds, DEC); Serial.print('.');
+    Serial.println(local_GPS.milliseconds);
     Serial.print("Date: ");
-    Serial.print(GPS.day, DEC); Serial.print('/');
-    Serial.print(GPS.month, DEC); Serial.print("/20");
-    Serial.println(GPS.year, DEC);
-    Serial.print("Fix: "); Serial.println((int)GPS.fix);
-    Serial.print("quality: "); Serial.println((int)GPS.fixquality); 
+    Serial.print(local_GPS.day, DEC); Serial.print('/');
+    Serial.print(local_GPS.month, DEC); Serial.print("/20");
+    Serial.println(local_GPS.year, DEC);
+    Serial.print("Fix: "); Serial.println((int)local_GPS.fix);
+    Serial.print("quality: "); Serial.println((int)local_GPS.fixquality); 
  
-    if (GPS.fix) {
+    if (local_GPS.fix) {
       Serial.print("Location: ");
-      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
+      Serial.print(local_GPS.latitude, 4); Serial.print(local_GPS.lat);
       Serial.print(", "); 
-      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
+      Serial.print(local_GPS.longitude, 4); Serial.println(local_GPS.lon);
       Serial.print("Location (in degrees, works with Google Maps): ");
-      Serial.print(GPS.latitudeDegrees, 5);
+      Serial.print(local_GPS.latitudeDegrees, 5);
       Serial.print(", "); 
-      Serial.println(GPS.longitudeDegrees, 5);
+      Serial.println(local_GPS.longitudeDegrees, 5);
       
-      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
-      Serial.print("Angle: "); Serial.println(GPS.angle);
-      Serial.print("Altitude: "); Serial.println(GPS.altitude);
-      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
+      Serial.print("Speed (knots): "); Serial.println(local_GPS.speed);
+      Serial.print("Angle: "); Serial.println(local_GPS.angle);
+      Serial.print("Altitude: "); Serial.println(local_GPS.altitude);
+      Serial.print("Satellites: "); Serial.println((int)local_GPS.satellites);
 
     }
     }
 
+  }
   }
 }

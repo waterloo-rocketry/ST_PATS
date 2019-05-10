@@ -12,23 +12,14 @@
 #define NAV_BALL_RADIUS 100
 
 
-
 class Display {
   private:
     Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
     
   public:
-    int heading;
-    int previous_heading;
-    float battery_voltage;
-    Display(){
-      heading = 0;
-      previous_heading = 0;
-      battery_voltage = 0;
-    }
     void begin();
     void set_background();
-    void Update();
+    void write_data(int system_cal, int gyro_cal, int accel_cal, int mag_cal, float latitude, float longditude);
     void draw_arrow(int heading);
 };
 
