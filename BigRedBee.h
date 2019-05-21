@@ -9,18 +9,19 @@
 
 class BigRedBee {
   private:
+    HardwareSerial *radio_serial;
     float longditude, latitude;
     unsigned long time; 
     int altitude, num_sats;
     char status;
-    char hex_voltage[4] = {"\0"};
+    char hex_voltage[4];
     int Vbat; 
     float HDOP, VDOP;
     
     float minutes_to_decimal (float minutes); // converts gps hours and minutes to decimal degrees
 
   public:
-    BigRedBee();
+    BigRedBee(HardwareSerial *serial_to_use);
     
     void begin(int baud);
     

@@ -6,16 +6,20 @@ float BigRedBee::minutes_to_decimal (float minutes){     // converts gps hours a
       return ((float)degrees + minutes/60);
     }
 
-BigRedBee::BigRedBee(){
+BigRedBee::BigRedBee(HardwareSerial *serial_to_use){
+  radio_serial = serial_to_use;
   longditude = 0, latitude = 0;
   time = 0, altitude = 0, num_sats = 0;
   status = '-';
+  for(int index = 0; index < 4; index++){
+    hex_voltage[index] = 0;
+  }
   Vbat = 0; 
   HDOP = 0, VDOP = 0;
 }
 
 void BigRedBee::begin(int baud){
-  Serial1.begin(baud);
+  radio_serial->begin(baud);
 }
 
 /* Example Sentances for reference:
@@ -27,44 +31,44 @@ void BigRedBee::begin(int baud){
  */
 
 void BigRedBee::parse_data(){
-  if(Serial1.available() > 0){
-    if(Serial1.find('$')){     //find the begining of the next string
-      Serial1.find(',');      //skip the "BRBTX
-      Serial1.find(',');     //skip the ID because I don't care
-      while(Serial1.available() == 0){}     //wait for data
-      status = Serial1.read();     //read our status
-      Serial1.find(',');      //ignore a comma
-      while(Serial1.available() == 0){}
-      if(Serial1.peek() != ','){          // check to see if there is a valid GPS time to parse
-        time = Serial1.parseInt();      //parse the time
+  if(radio_serial->available() > 0){
+    if(radio_serial->find('$')){     //find the begining of the next string
+      radio_serial->find(',');      //skip the "BRBTX
+      radio_serial->find(',');     //skip the ID because I don't care
+      while(radio_serial->available() == 0){}     //wait for data
+      status = radio_serial->read();     //read our status
+      radio_serial->find(',');      //ignore a comma
+      while(radio_serial->available() == 0){}
+      if(radio_serial->peek() != ','){          // check to see if there is a valid GPS time to parse
+        time = radio_serial->parseInt();      //parse the time
       }
-      Serial1.find(',');      //ignore a comma
-      while(Serial1.available() == 0){}
-      if(Serial1.peek() != ','){
-        longditude = minutes_to_decimal(Serial1.parseFloat());     //if we have a longditude and latitude parse it
-        while(Serial1.available() == 0){}
-        if(Serial1.read() == 'S')
+      radio_serial->find(',');      //ignore a comma
+      while(radio_serial->available() == 0){}
+      if(radio_serial->peek() != ','){
+        longditude = minutes_to_decimal(radio_serial->parseFloat());     //if we have a longditude and latitude parse it
+        while(radio_serial->available() == 0){}
+        if(radio_serial->read() == 'S')
           longditude = -longditude;
-        latitude = minutes_to_decimal(Serial1.parseFloat());
-        while(Serial1.available() == 0){}
-        if(Serial1.read() == 'W')
+        latitude = minutes_to_decimal(radio_serial->parseFloat());
+        while(radio_serial->available() == 0){}
+        if(radio_serial->read() == 'W')
           latitude = -latitude;
       }
-      num_sats = Serial1.parseInt();      //parse the number of satalites
-      Serial1.find(',');
-      while(Serial1.available() == 0){}
-      if(Serial1.peek() != ','){
-        HDOP = Serial1.parseFloat();      //parse HDOP
-        altitude = Serial1.parseInt();      //parse height (in feet)
-        VDOP = Serial1.parseFloat();      //parse HDOP
+      num_sats = radio_serial->parseInt();      //parse the number of satalites
+      radio_serial->find(',');
+      while(radio_serial->available() == 0){}
+      if(radio_serial->peek() != ','){
+        HDOP = radio_serial->parseFloat();      //parse HDOP
+        altitude = radio_serial->parseInt();      //parse height (in feet)
+        VDOP = radio_serial->parseFloat();      //parse HDOP
       }
-      while(Serial1.available() == 0){}
+      while(radio_serial->available() == 0){}
       do{
-        //if(Serial1.peek() == ',')
-          Serial1.read();
-          while(Serial1.available() == 0){}
-      }while(Serial1.peek() == ',');
-      Serial1.readBytesUntil('*', hex_voltage, 3);
+        //if(radio_serial->peek() == ',')
+          radio_serial->read();
+          while(radio_serial->available() == 0){}
+      }while(radio_serial->peek() == ',');
+      radio_serial->readBytesUntil('*', hex_voltage, 3);
       sscanf(hex_voltage, "%x", &Vbat);
       
       // for debuging

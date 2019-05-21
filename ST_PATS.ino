@@ -1,22 +1,24 @@
 #include <Wire.h>
 #include "display.h"
 #include "BigRedBee.h"
-#include <Adafruit_Sensor.h>
-#include <Adafruit_LSM303_U.h>
+#include "compass.h"
 #include <Adafruit_GPS.h>
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 
 #define TIME_BETWEEN_UPDATES 1000 // in ms
 
 unsigned long time_of_last_update = 0;
 
-SoftwareSerial GPS_serial(10, 9); //RX, TX
-Adafruit_GPS local_GPS(&GPS_serial);
-
-/* Assign a unique ID to this sensor at the same time */
-Adafruit_LSM303_Mag_Unified compass = Adafruit_LSM303_Mag_Unified(12345);
-
 Display display;
+Compass compass;
+
+HardwareSerial Serial5(PD2, PC12);
+BigRedBee brb_GPS(&Serial5);
+
+//SoftwareSerial GPS_serial(10, 9); //RX, TX
+HardwareSerial Serial3(PC5, PC4);
+Adafruit_GPS local_GPS(&Serial3);
+
 
 void setup(void) 
 {
@@ -30,18 +32,15 @@ void setup(void)
   display.set_background();
   
   local_GPS.begin(9600);
-  // turn on RMC (recommended minimum) and GGA (fix data) including altitude
-  local_GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  
-  // Set the update rate
+  local_GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);  // turn on RMC (recommended minimum) and GGA (fix data) including altitude
   local_GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
+  //useInterrupt();
 
-  /* Initialise the sensor */
+  brb_GPS.begin(9600);
   compass.begin();
-  
-  useInterrupt();
-}
 
+}
+/*
 SIGNAL(TIMER0_COMPA_vect) {
   char c = local_GPS.read();
 }
@@ -52,28 +51,21 @@ void useInterrupt() {
     OCR0A = 0xAF;
     TIMSK0 |= _BV(OCIE0A);
 }
-
+*/
 void loop(void) 
 {
+  char c = local_GPS.read();
+  brb_GPS.parse_data();
   if(millis() - time_of_last_update > TIME_BETWEEN_UPDATES){
     time_of_last_update = millis();
-    sensors_event_t event; 
-    compass.getEvent(&event);
-  
-    // Calculate the angle of the vector y,x
-    float heading = (atan2(event.magnetic.y,event.magnetic.x) * 180) / PI;
-  
-    // Normalize to 0-360
-    if (heading < 0)
-    {
-     heading = 360 + heading;
-    }
-    
-    display.draw_arrow(heading);
-    Serial.print("Compass Heading: ");
-    Serial.println(heading);
 
-  //display.write_data(syst, gyro, accel, mag, 48.2382, 123.659);
+    compass.read();
+    
+    display.draw_arrow(compass.get_heading());
+    Serial.print("Compass Heading: ");
+    Serial.println(compass.get_heading());
+
+  //display.write_data(0, 0, 0, 0, 48.2382, 123.659);
   char c = local_GPS.read();
   
   // if a sentence is received, we can check the checksum, parse it...
