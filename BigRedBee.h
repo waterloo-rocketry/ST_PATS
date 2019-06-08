@@ -1,4 +1,4 @@
-// this code reads from Serial1 and parses BigRedBee GPS sentances
+// this code reads from a UART line and parses BigRedBee GPS sentances
 
 #ifndef BIG_RED_BEE
 #define BIG_RED_BEE
@@ -8,9 +8,9 @@
 //#define SERIAL_DEBUGING
 
 class BigRedBee {
-  private:
+  public:
     HardwareSerial *radio_serial;
-    float longditude, latitude;
+    float longitude, latitude;
     unsigned long time; 
     int altitude, num_sats;
     char status;
@@ -20,7 +20,6 @@ class BigRedBee {
     
     float minutes_to_decimal (float minutes); // converts gps hours and minutes to decimal degrees
 
-  public:
     BigRedBee(HardwareSerial *serial_to_use);
     
     void begin(int baud);

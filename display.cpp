@@ -9,35 +9,28 @@ void Display::begin(){
 void Display::set_background(){
     // draw outside circle
   tft.fillScreen(ILI9341_WHITE);
+  tft.setRotation(1);
   //
   //tft.drawCircle(NAV_BALL_CENTER_X_CORD, NAV_BALL_CENTER_Y_CORD, (NAV_BALL_RADIUS + 1), ILI9341_WHITE);
   //tft.drawCircle(NAV_BALL_CENTER_X_CORD, NAV_BALL_CENTER_Y_CORD, (NAV_BALL_RADIUS + 2), ILI9341_WHITE);
 }
 
-void Display::write_data(int system_cal, int gyro_cal, int accel_cal, int mag_cal, float latitude, float longditude){
-  tft.fillRect(0, 0, 240, 18, ILI9341_WHITE);
-  tft.fillRect(0, 18, 60, 18, ILI9341_WHITE); // wipe the clibration text
-  tft.setCursor(0, 0);
-  tft.setTextColor(ILI9341_RED);  tft.setTextSize(2);
-  tft.print("Syst:");
-  tft.print(system_cal);
-  tft.print(" Gyro:");
-  tft.print(gyro_cal);
-  tft.print(" Acel:");
-  tft.println(accel_cal);
-  tft.print("Mag:");
-  tft.print(mag_cal);
-  tft.setCursor(0, 230);
-  tft.print("Your Lat: ");
-  tft.println(latitude);
-  tft.print("Your Long: ");
-  tft.println(longditude);
+void Display::write_GPS(String GPS_name, float time, float latitude, float longditude){
+  tft.setTextColor(ILI9341_BLUE);  tft.setTextSize(2);
+  tft.println(GPS_name);
+  tft.setTextColor(ILI9341_RED);
+  tft.println("Time:");
+  tft.println(time);
+  tft.println("Lat:");
+  tft.println(latitude, 5);
+  tft.println("Long:");
+  tft.println(longditude, 5);
 }
 
 void Display::draw_arrow(int heading){
     tft.fillCircle(NAV_BALL_CENTER_X_CORD, NAV_BALL_CENTER_Y_CORD, NAV_BALL_RADIUS, ILI9341_BLACK);
     tft.setTextColor(ILI9341_YELLOW);  tft.setTextSize(4);
-    tft.setCursor(80, 100);
+    tft.setCursor(NAV_BALL_CENTER_X_CORD - 20, NAV_BALL_CENTER_Y_CORD - 10);
     tft.println(heading);
     
     float x_cord_0 = 0, x_cord_1 = 0;
@@ -55,4 +48,9 @@ void rotate(float & x_cord, float & y_cord, float theta){
   float temp_x_cord = x_cord;
   x_cord = (temp_x_cord*cos(theta)) - (y_cord*sin(theta));
   y_cord = (temp_x_cord*sin(theta)) + (y_cord*cos(theta));
+}
+
+void Display::reset_text(){
+  tft.fillRect(0, 0, 120, 240, ILI9341_WHITE);
+  tft.setCursor(0, 1);
 }

@@ -8,7 +8,7 @@ float BigRedBee::minutes_to_decimal (float minutes){     // converts gps hours a
 
 BigRedBee::BigRedBee(HardwareSerial *serial_to_use){
   radio_serial = serial_to_use;
-  longditude = 0, latitude = 0;
+  longitude = 0, latitude = 0;
   time = 0, altitude = 0, num_sats = 0;
   status = '-';
   for(int index = 0; index < 4; index++){
@@ -45,10 +45,10 @@ void BigRedBee::parse_data(){
       radio_serial->find(',');      //ignore a comma
       while(radio_serial->available() == 0){}
       if(radio_serial->peek() != ','){
-        longditude = minutes_to_decimal(radio_serial->parseFloat());     //if we have a longditude and latitude parse it
+        longitude = minutes_to_decimal(radio_serial->parseFloat());     //if we have a longitude and latitude parse it
         while(radio_serial->available() == 0){}
         if(radio_serial->read() == 'S')
-          longditude = -longditude;
+          longitude = -longitude;
         latitude = minutes_to_decimal(radio_serial->parseFloat());
         while(radio_serial->available() == 0){}
         if(radio_serial->read() == 'W')
@@ -77,8 +77,8 @@ void BigRedBee::parse_data(){
       Serial.println(time);
       Serial.print("num_sats: ");
       Serial.println(num_sats);
-      Serial.print("longditude: ");
-      Serial.println(longditude, 4);
+      Serial.print("longitude: ");
+      Serial.println(longitude, 4);
       Serial.print("latitude: ");
       Serial.println(latitude, 4);
       Serial.print("altitude: ");
