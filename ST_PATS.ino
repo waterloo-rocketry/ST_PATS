@@ -1,12 +1,22 @@
 #include <Wire.h>
 #include "display.h"
 #include "BigRedBee.h"
+#include "RocketCAN.h"
 #include "compass.h"
 #include <Adafruit_GPS.h>
 //#include <SoftwareSerial.h>
 
-#define TIME_BETWEEN_UPDATES 1000 // in ms
-#define TIME_BETWEEN_SCREEN_RESET 10000 // in ms
+#define TIME_BETWEEN_UPDATES 2000 // in ms
+#define TIME_BETWEEN_SCREEN_RESET 30000 // in ms
+
+#define RED_BUTTON PB11
+#define GREEN_BUTTON PB10
+#define BLUE_BUTTON PE15
+
+#define RED_LED PE0
+#define GREEN_LED PB0
+#define BLUE_LED PA0
+
 
 unsigned long time_of_last_update = 0;
 unsigned long time_of_last_screen_reset = 0;
@@ -19,6 +29,9 @@ Compass compass;
 
 HardwareSerial Serial5(PD2, PC12);
 BigRedBee brb_GPS(&Serial5);
+
+HardwareSerial Serial4(PC11, PC10);
+RocketCAN CAN_GPS(&Serial);
 
 HardwareSerial Serial3(PC5, PC4);
 Adafruit_GPS local_GPS(&Serial3);
@@ -33,18 +46,19 @@ static stimer_t Timer_Handler;
 static void read_gps_data(stimer_t *unused){
   char c = local_GPS.read();
   brb_GPS.parse_data();
+  CAN_GPS.read();
 }
 
 
 void setup(void) 
 {
-  delay(250);// weird things happen if we don't let things boot up before trying to talk to them
+  
+  display.power_up();
+  display.begin();
+  display.set_background();
   
   Serial.begin(9600);
   Serial.println("ST PATS"); Serial.println("");
-
-  display.begin();
-  display.set_background();
   
   /* lets set up our sensors */
   local_GPS.begin(9600);
@@ -52,6 +66,7 @@ void setup(void)
   local_GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
 
   brb_GPS.begin(9600);
+  CAN_GPS.begin(9600);
   compass.begin();
 
   /* lets set up our interupt timer for reading all the UART data */
@@ -60,19 +75,16 @@ void setup(void)
   TimerHandleInit(&Timer_Handler, 1, (uint32_t)(getTimerClkFreq(TIM4) / 1000));
   attachIntHandle(&Timer_Handler, read_gps_data);
 
-}
-/*
-SIGNAL(TIMER0_COMPA_vect) {
-  char c = local_GPS.read();
+  pinMode(RED_LED, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(BLUE_LED, OUTPUT);
+
+  pinMode(RED_BUTTON, INPUT_PULLUP);
+  pinMode(GREEN_BUTTON, INPUT_PULLUP);
+  pinMode(BLUE_BUTTON, INPUT_PULLUP);
+
 }
 
-void useInterrupt() {
-    // Timer0 is already used for millis() - we'll just interrupt somewhere
-    // in the middle and call the "Compare A" function above
-    OCR0A = 0xAF;
-    TIMSK0 |= _BV(OCIE0A);
-}
-*/
 void loop(void) 
 {
   //Serial.print(c);
@@ -80,13 +92,15 @@ void loop(void)
     time_of_last_update = millis();
 
     compass.read();
-    
+
+    display.reset();
     display.draw_arrow(compass.get_heading());
+    display.write_GPS("BigRedBee:", brb_GPS.time, brb_GPS.latitude, brb_GPS.longitude);
+    display.write_GPS("RocketCAN:", CAN_GPS.time_since_last_msg(), CAN_GPS.latitude, CAN_GPS.longitude);
+    display.write_local_data(local_GPS.seconds, local_GPS.satellites);
+
     Serial.print("Compass Heading: ");
     Serial.println(compass.get_heading());
-    display.reset_text();
-    display.write_GPS("Local:", local_GPS.seconds, local_GPS.latitudeDegrees, local_GPS.longitudeDegrees);
-    display.write_GPS("BigRedBee:", brb_GPS.time, brb_GPS.latitude, brb_GPS.longitude);
   
   // if a sentence is received, we can check the checksum, parse it...
   if (local_GPS.newNMEAreceived()) {
@@ -130,7 +144,29 @@ void loop(void)
   }
   if(millis() - time_of_last_screen_reset > TIME_BETWEEN_SCREEN_RESET){
     time_of_last_screen_reset = millis();
+    display.power_down();
+    delay(50);
+    display.power_up();
     display.begin();
     display.set_background();
   }
+  if(digitalRead(RED_BUTTON) == HIGH){
+    digitalWrite(RED_LED, HIGH);
+  }
+  else{
+    digitalWrite(RED_LED, LOW);
+  }
+  if(digitalRead(GREEN_BUTTON) == HIGH){
+    digitalWrite(GREEN_LED, HIGH);
+  }
+  else{
+    digitalWrite(GREEN_LED, LOW);
+  }
+  if(digitalRead(BLUE_BUTTON) == HIGH){
+    digitalWrite(BLUE_LED, HIGH);
+  }
+  else{
+    digitalWrite(BLUE_LED, LOW);
+  }
+
 }

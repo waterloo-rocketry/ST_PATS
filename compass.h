@@ -7,12 +7,12 @@
 class Compass {
 private:
 Adafruit_LSM303_Mag_Unified compass = Adafruit_LSM303_Mag_Unified(12345); // assign ID of 12345
-float heading;
+double heading;
 public:
 Compass();
 bool begin();
 void read();
-float get_heading();
+double get_heading();
 
 };
 

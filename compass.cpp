@@ -19,6 +19,6 @@ void Compass::read(){
    }
 }
 
-float Compass::get_heading(){
+double Compass::get_heading(){
   return heading;
 }

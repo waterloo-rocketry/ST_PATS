@@ -1,9 +1,9 @@
 #include "BigRedBee.h"
 
-float BigRedBee::minutes_to_decimal (float minutes){     // converts gps hours and minutes to decimal degrees
+double BigRedBee::minutes_to_decimal (double minutes){     // converts gps hours and minutes to decimal degrees
       int degrees = minutes/100;
       minutes = minutes - (degrees*100);
-      return ((float)degrees + minutes/60);
+      return ((double)degrees + minutes/60);
     }
 
 BigRedBee::BigRedBee(HardwareSerial *serial_to_use){

@@ -6,6 +6,7 @@
 
 #define TFT_DC 9
 #define TFT_CS 10
+#define POWER_PIN PE14
 #define BRIGHTNESS 255
 #define NAV_BALL_CENTER_X_CORD 220
 #define NAV_BALL_CENTER_Y_CORD 100
@@ -18,12 +19,15 @@ class Display {
     
   public:
     Display();
+    void power_up();
+    void power_down();
     void begin();
     void set_background();
-    void write_GPS(String GPS_name, float time, float latitude, float longditude);
+    void write_GPS(String GPS_name, double time, double latitude, double longditude);
+    void write_local_data(double time, int num_sats);
     void draw_arrow(int heading);
-    void reset_text();
+    void reset();
 };
 
-void rotate(float & x_cord, float & y_cord, float theta);
+void rotate(double & x_cord, double & y_cord, double theta);
 #endif

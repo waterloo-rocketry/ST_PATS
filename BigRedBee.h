@@ -1,7 +1,7 @@
 // this code reads from a UART line and parses BigRedBee GPS sentances
 
-#ifndef BIG_RED_BEE
-#define BIG_RED_BEE
+#ifndef BIG_RED_BEE_H
+#define BIG_RED_BEE_H
 
 #include "Arduino.h"
 
@@ -10,15 +10,15 @@
 class BigRedBee {
   public:
     HardwareSerial *radio_serial;
-    float longitude, latitude;
+    double longitude, latitude;
     unsigned long time; 
     int altitude, num_sats;
     char status;
     char hex_voltage[4];
     int Vbat; 
-    float HDOP, VDOP;
+    double HDOP, VDOP;
     
-    float minutes_to_decimal (float minutes); // converts gps hours and minutes to decimal degrees
+    double minutes_to_decimal (double minutes); // converts gps hours and minutes to decimal degrees
 
     BigRedBee(HardwareSerial *serial_to_use);
     
