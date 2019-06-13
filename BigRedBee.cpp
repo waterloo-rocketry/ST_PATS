@@ -7,6 +7,7 @@ double BigRedBee::minutes_to_decimal (double minutes){     // converts gps hours
     }
 
 BigRedBee::BigRedBee(HardwareSerial *serial_to_use){
+  time_of_last_msg = 0;
   radio_serial = serial_to_use;
   longitude = 0, latitude = 0;
   time = 0, altitude = 0, num_sats = 0;
@@ -31,42 +32,67 @@ void BigRedBee::begin(int baud){
  */
 
 void BigRedBee::parse_data(){
+  unsigned int start_time = millis();
   if(radio_serial->available() > 0){
     if(radio_serial->find('$')){     //find the begining of the next string
       radio_serial->find(',');      //skip the "BRBTX
       radio_serial->find(',');     //skip the ID because I don't care
-      while(radio_serial->available() == 0){}     //wait for data
+      while(radio_serial->available() == 0){
+        if(millis() - start_time > TIMEOUT)
+          return;
+        }     //wait for data
       status = radio_serial->read();     //read our status
       radio_serial->find(',');      //ignore a comma
-      while(radio_serial->available() == 0){}
+      while(radio_serial->available() == 0){
+        if(millis() - start_time > TIMEOUT)
+          return;
+      }
       if(radio_serial->peek() != ','){          // check to see if there is a valid GPS time to parse
         time = radio_serial->parseInt();      //parse the time
       }
       radio_serial->find(',');      //ignore a comma
-      while(radio_serial->available() == 0){}
+      while(radio_serial->available() == 0){
+        if(millis() - start_time > TIMEOUT)
+          return;
+      }
       if(radio_serial->peek() != ','){
-        longitude = minutes_to_decimal(radio_serial->parseFloat());     //if we have a longitude and latitude parse it
-        while(radio_serial->available() == 0){}
+        latitude = minutes_to_decimal(radio_serial->parseFloat());     //if we have a longitude and latitude parse it
+        while(radio_serial->available() == 0){
+          if(millis() - start_time > TIMEOUT)
+          return;
+        }
         if(radio_serial->read() == 'S')
-          longitude = -longitude;
-        latitude = minutes_to_decimal(radio_serial->parseFloat());
-        while(radio_serial->available() == 0){}
-        if(radio_serial->read() == 'W')
           latitude = -latitude;
+        longitude = minutes_to_decimal(radio_serial->parseFloat());
+        while(radio_serial->available() == 0){
+          if(millis() - start_time > TIMEOUT)
+            return;
+        }
+        if(radio_serial->read() == 'W')
+          longitude = -longitude;
       }
       num_sats = radio_serial->parseInt();      //parse the number of satalites
       radio_serial->find(',');
-      while(radio_serial->available() == 0){}
+      while(radio_serial->available() == 0){
+        if(millis() - start_time > TIMEOUT)
+          return;
+      }
       if(radio_serial->peek() != ','){
         HDOP = radio_serial->parseFloat();      //parse HDOP
         altitude = radio_serial->parseInt();      //parse height (in feet)
         VDOP = radio_serial->parseFloat();      //parse HDOP
       }
-      while(radio_serial->available() == 0){}
+      while(radio_serial->available() == 0){
+        if(millis() - start_time > TIMEOUT)
+          return;
+      }
       do{
         //if(radio_serial->peek() == ',')
           radio_serial->read();
-          while(radio_serial->available() == 0){}
+          while(radio_serial->available() == 0){
+            if(millis() - start_time > TIMEOUT)
+              return;
+          }
       }while(radio_serial->peek() == ',');
       radio_serial->readBytesUntil('*', hex_voltage, 3);
       sscanf(hex_voltage, "%x", &Vbat);
@@ -95,5 +121,10 @@ void BigRedBee::parse_data(){
       #endif
       
     }
+    time_of_last_msg = millis();
       }
     }
+
+long BigRedBee::time_since_last_msg(){
+  return millis() - time_of_last_msg;
+}

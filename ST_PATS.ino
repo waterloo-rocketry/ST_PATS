@@ -3,11 +3,12 @@
 #include "BigRedBee.h"
 #include "RocketCAN.h"
 #include "compass.h"
+#include "navigation.h"
 #include <Adafruit_GPS.h>
 //#include <SoftwareSerial.h>
 
-#define TIME_BETWEEN_UPDATES 2000 // in ms
-#define TIME_BETWEEN_SCREEN_RESET 30000 // in ms
+#define TIME_BETWEEN_UPDATES 1000 // in ms
+#define TIME_BETWEEN_SCREEN_RESET 60000 // in ms
 
 #define RED_BUTTON PB11
 #define GREEN_BUTTON PB10
@@ -31,7 +32,7 @@ HardwareSerial Serial5(PD2, PC12);
 BigRedBee brb_GPS(&Serial5);
 
 HardwareSerial Serial4(PC11, PC10);
-RocketCAN CAN_GPS(&Serial);
+RocketCAN CAN_GPS(&Serial4);
 
 HardwareSerial Serial3(PC5, PC4);
 Adafruit_GPS local_GPS(&Serial3);
@@ -94,10 +95,19 @@ void loop(void)
     compass.read();
 
     display.reset();
-    display.draw_arrow(compass.get_heading());
-    display.write_GPS("BigRedBee:", brb_GPS.time, brb_GPS.latitude, brb_GPS.longitude);
-    display.write_GPS("RocketCAN:", CAN_GPS.time_since_last_msg(), CAN_GPS.latitude, CAN_GPS.longitude);
-    display.write_local_data(local_GPS.seconds, local_GPS.satellites);
+    //display.draw_arrow(compass.get_heading());
+    if(brb_GPS.time_since_last_msg() < CAN_GPS.time_since_last_msg()){
+      display.draw_arrow(target_heading(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
+      brb_GPS.latitude, brb_GPS.longitude));
+    }
+    else {
+      display.draw_arrow(target_heading(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
+      CAN_GPS.latitude, CAN_GPS.longitude));
+    }
+    display.write_GPS("BRBee:", brb_GPS.time_since_last_msg()/1000.0, brb_GPS.latitude, brb_GPS.longitude);
+    display.write_GPS("R_CAN:", CAN_GPS.time_since_last_msg()/1000.0, CAN_GPS.latitude, CAN_GPS.longitude);
+    display.write_GPS("Local:", local_GPS.angle, local_GPS.latitudeDegrees, local_GPS.longitudeDegrees);
+    display.write_local_data(local_GPS.hour, local_GPS.minute, local_GPS.seconds, local_GPS.satellites);
 
     Serial.print("Compass Heading: ");
     Serial.println(compass.get_heading());

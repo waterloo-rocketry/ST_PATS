@@ -28,6 +28,7 @@ bool RocketCAN::read(){
 }
 
 void RocketCAN::process_incoming_char(char c) {
+  Serial.write(c);
     static enum {
         NONE,
         GPS_READ
@@ -96,7 +97,7 @@ bool RocketCAN::expand_gps_message(uint8_t *latitude_deg,
     *longitude_min  |= (base64_to_binary(str[7]) >> 2) & 0xf;
 
     *longitude_dmin  = (base64_to_binary(str[7]) << 6) & 0xc0;
-    *longitude_dmin |= (base64_to_binary(str[8]))      & 0x30;
+    *longitude_dmin |= (base64_to_binary(str[8]))      & 0x3f;
 
     // last char has lat_dir (1=='N', 0=='S') and lon_dir (1=='E', 0==W)
     *latitude_dir  = (base64_to_binary(str[9]) & 0x20) ? 'N' : 'S';

@@ -5,6 +5,7 @@
 
 #include "Arduino.h"
 
+#define TIMEOUT 500 
 //#define SERIAL_DEBUGING
 
 class BigRedBee {
@@ -17,6 +18,7 @@ class BigRedBee {
     char hex_voltage[4];
     int Vbat; 
     double HDOP, VDOP;
+    long time_of_last_msg;
     
     double minutes_to_decimal (double minutes); // converts gps hours and minutes to decimal degrees
 
@@ -25,6 +27,11 @@ class BigRedBee {
     void begin(int baud);
     
     void parse_data();
+    
+   /*
+   * returns how long its been since we got a new GPS message in ms
+   */
+   long time_since_last_msg();
 };
 
 #endif
