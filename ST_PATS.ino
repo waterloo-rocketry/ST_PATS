@@ -1,3 +1,9 @@
+/*
+ * IMPORTANT: In addition to the required libraries the serial RX buffer needs to be set to 256 bytes instead of 64
+ * you should find this number in HardwareSerial.h at somewhere like this:
+ * ...\ArduinoData\packages\STM32\hardware\stm32\1.4.0\cores\arduino
+ */
+
 #include <Wire.h>
 #include "display.h"
 #include "BigRedBee.h"
@@ -5,7 +11,6 @@
 #include "compass.h"
 #include "navigation.h"
 #include <Adafruit_GPS.h>
-//#include <SoftwareSerial.h>
 
 #define TIME_BETWEEN_UPDATES 1000 // in ms
 #define TIME_BETWEEN_SCREEN_RESET 60000 // in ms
@@ -18,6 +23,10 @@
 #define GREEN_LED PB0
 #define BLUE_LED PA0
 
+static enum {
+  BIG_RED_BEE,
+  ROCKET_CAN
+}nav_GPS;
 
 unsigned long time_of_last_update = 0;
 unsigned long time_of_last_screen_reset = 0;
@@ -46,7 +55,6 @@ static stimer_t Timer_Handler;
  */
 static void read_gps_data(stimer_t *unused){
   char c = local_GPS.read();
-  brb_GPS.parse_data();
   CAN_GPS.read();
 }
 
@@ -88,15 +96,14 @@ void setup(void)
 
 void loop(void) 
 {
-  //Serial.print(c);
   if(millis() - time_of_last_update > TIME_BETWEEN_UPDATES){
     time_of_last_update = millis();
 
-    compass.read();
+    brb_GPS.parse_data();
 
-    display.reset();
+    compass.read();
     //display.draw_arrow(compass.get_heading());
-    if(brb_GPS.time_since_last_msg() < CAN_GPS.time_since_last_msg()){
+    if(nav_GPS == BIG_RED_BEE){
       display.draw_arrow(target_heading(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
       brb_GPS.latitude, brb_GPS.longitude));
     }
@@ -104,9 +111,10 @@ void loop(void)
       display.draw_arrow(target_heading(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
       CAN_GPS.latitude, CAN_GPS.longitude));
     }
-    display.write_GPS("BRBee:", brb_GPS.time_since_last_msg()/1000.0, brb_GPS.latitude, brb_GPS.longitude);
-    display.write_GPS("R_CAN:", CAN_GPS.time_since_last_msg()/1000.0, CAN_GPS.latitude, CAN_GPS.longitude);
-    display.write_GPS("Local:", local_GPS.angle, local_GPS.latitudeDegrees, local_GPS.longitudeDegrees);
+    display.write_GPS("BRBee:", brb_GPS.time_since_last_msg()/1000.0, brb_GPS.latitude, brb_GPS.longitude, !nav_GPS);
+    display.write_GPS("R_CAN:", CAN_GPS.time_since_last_msg()/1000.0, CAN_GPS.latitude, CAN_GPS.longitude, nav_GPS);
+    display.write_GPS("Local:", distance_to_target(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
+      brb_GPS.latitude, brb_GPS.longitude), local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, false);
     display.write_local_data(local_GPS.hour, local_GPS.minute, local_GPS.seconds, local_GPS.satellites);
 
     Serial.print("Compass Heading: ");
@@ -151,6 +159,26 @@ void loop(void)
     }
 
   }
+    if(digitalRead(RED_BUTTON) == HIGH){
+    digitalWrite(RED_LED, HIGH);
+  }
+  else{
+    digitalWrite(RED_LED, LOW);
+    nav_GPS = BIG_RED_BEE;
+  }
+  if(digitalRead(GREEN_BUTTON) == HIGH){
+    digitalWrite(GREEN_LED, HIGH);
+  }
+  else{
+    digitalWrite(GREEN_LED, LOW);
+    nav_GPS = ROCKET_CAN;
+  }
+  if(digitalRead(BLUE_BUTTON) == HIGH){
+    digitalWrite(BLUE_LED, HIGH);
+  }
+  else{
+    digitalWrite(BLUE_LED, LOW);
+  }
   }
   if(millis() - time_of_last_screen_reset > TIME_BETWEEN_SCREEN_RESET){
     time_of_last_screen_reset = millis();
@@ -159,24 +187,6 @@ void loop(void)
     display.power_up();
     display.begin();
     display.set_background();
-  }
-  if(digitalRead(RED_BUTTON) == HIGH){
-    digitalWrite(RED_LED, HIGH);
-  }
-  else{
-    digitalWrite(RED_LED, LOW);
-  }
-  if(digitalRead(GREEN_BUTTON) == HIGH){
-    digitalWrite(GREEN_LED, HIGH);
-  }
-  else{
-    digitalWrite(GREEN_LED, LOW);
-  }
-  if(digitalRead(BLUE_BUTTON) == HIGH){
-    digitalWrite(BLUE_LED, HIGH);
-  }
-  else{
-    digitalWrite(BLUE_LED, LOW);
   }
 
 }

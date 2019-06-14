@@ -33,7 +33,7 @@ void BigRedBee::begin(int baud){
 
 void BigRedBee::parse_data(){
   unsigned int start_time = millis();
-  if(radio_serial->available() > 0){
+  if(radio_serial->available() >= 72){
     if(radio_serial->find('$')){     //find the begining of the next string
       radio_serial->find(',');      //skip the "BRBTX
       radio_serial->find(',');     //skip the ID because I don't care
