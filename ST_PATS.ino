@@ -10,6 +10,7 @@
 #include "RocketCAN.h"
 #include "compass.h"
 #include "navigation.h"
+#include "EEPROM_storage.h"
 #include <Adafruit_GPS.h>
 
 #define TIME_BETWEEN_UPDATES 1000 // in ms
@@ -25,11 +26,15 @@
 
 static enum {
   BIG_RED_BEE,
-  ROCKET_CAN
+  ROCKET_CAN,
+  LOCAL
 }nav_GPS;
 
 unsigned long time_of_last_update = 0;
 unsigned long time_of_last_screen_reset = 0;
+
+EEPROM_data EEPROM_nav_data;
+
 
 // Create objects for all our sensors:
 
@@ -61,7 +66,9 @@ static void read_gps_data(stimer_t *unused){
 
 void setup(void) 
 {
-  
+  EEPROM_nav_data.nav = false;
+  EEPROM_nav_data.latitude = 0;
+  EEPROM_nav_data.longitude = 0;
   display.power_up();
   display.begin();
   display.set_background();
@@ -103,18 +110,55 @@ void loop(void)
 
     compass.read();
     //display.draw_arrow(compass.get_heading());
+
+  if(EEPROM_nav_data.nav){
+    get_GPS_location(EEPROM_nav_data.latitude, EEPROM_nav_data.longitude, nav_GPS);
+    display.draw_arrow(target_heading(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
+    EEPROM_nav_data.latitude, EEPROM_nav_data.longitude));
+  }
+  else {
     if(nav_GPS == BIG_RED_BEE){
       display.draw_arrow(target_heading(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
       brb_GPS.latitude, brb_GPS.longitude));
     }
-    else {
+    else if(nav_GPS == ROCKET_CAN){
       display.draw_arrow(target_heading(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
       CAN_GPS.latitude, CAN_GPS.longitude));
     }
-    display.write_GPS("BRBee:", brb_GPS.time_since_last_msg()/1000.0, brb_GPS.latitude, brb_GPS.longitude, !nav_GPS);
-    display.write_GPS("R_CAN:", CAN_GPS.time_since_last_msg()/1000.0, CAN_GPS.latitude, CAN_GPS.longitude, nav_GPS);
-    display.write_GPS("Local:", distance_to_target(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
-      brb_GPS.latitude, brb_GPS.longitude), local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, false);
+    else {
+      display.draw_arrow(target_heading(0, 0, 1, 0));
+    }
+  }
+    display.write_GPS("BRBee:", brb_GPS.time_since_last_msg()/1000.0, brb_GPS.latitude, brb_GPS.longitude, nav_GPS == BIG_RED_BEE);
+    display.write_GPS("R_CAN:", CAN_GPS.time_since_last_msg()/1000.0, CAN_GPS.latitude, CAN_GPS.longitude, nav_GPS == ROCKET_CAN);
+
+  if(EEPROM_nav_data.nav){
+      display.write_GPS("Local:", 
+      distance_to_target(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, EEPROM_nav_data.latitude, EEPROM_nav_data.longitude), 
+      local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, nav_GPS == LOCAL);
+  }
+
+  else {
+    if(nav_GPS == BIG_RED_BEE){
+      display.write_GPS("Local:", distance_to_target(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
+      brb_GPS.latitude, brb_GPS.longitude), local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, nav_GPS == LOCAL);
+    }
+    else if(nav_GPS == ROCKET_CAN){
+      display.write_GPS("Local:", distance_to_target(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees,
+      CAN_GPS.latitude, CAN_GPS.longitude), local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, nav_GPS == LOCAL);
+    }
+    else {
+      display.write_GPS("Local:", distance_to_target(0, 0, 0, 0), local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, nav_GPS == LOCAL);
+    }
+  }
+
+    if(EEPROM_nav_data.nav){
+      display.write_GPS("EEPROM:", nav_GPS, EEPROM_nav_data.latitude, EEPROM_nav_data.longitude, true);
+    }
+    else{
+      display.clear_GPS();
+    }
+
     display.write_local_data(local_GPS.hour, local_GPS.minute, local_GPS.seconds, local_GPS.satellites);
 
     Serial.print("Compass Heading: ");
@@ -122,64 +166,47 @@ void loop(void)
   
   // if a sentence is received, we can check the checksum, parse it...
   if (local_GPS.newNMEAreceived()) {
-  
-    if (local_GPS.parse(local_GPS.lastNMEA())){
-    
-    Serial.print("\nTime: ");
-    Serial.print(local_GPS.hour, DEC); Serial.print(':');
-    Serial.print(local_GPS.minute, DEC); Serial.print(':');
-    Serial.print(local_GPS.seconds, DEC); Serial.print('.');
-    Serial.println(local_GPS.milliseconds);
-    Serial.print("Date: ");
-    Serial.print(local_GPS.day, DEC); Serial.print('/');
-    Serial.print(local_GPS.month, DEC); Serial.print("/20");
-    Serial.println(local_GPS.year, DEC);
-    Serial.print("Fix: "); Serial.println((int)local_GPS.fix);
-    Serial.print("quality: "); Serial.println((int)local_GPS.fixquality); 
- 
-    if (local_GPS.fix) {
-      Serial.print("Location: ");
-      Serial.print(local_GPS.latitude, 4); Serial.print(local_GPS.lat);
-      Serial.print(", "); 
-      Serial.print(local_GPS.longitude, 4); Serial.println(local_GPS.lon);
-      Serial.print("Location (in degrees, works with Google Maps): ");
-      Serial.print(local_GPS.latitudeDegrees, 5);
-      Serial.print(", "); 
-      Serial.println(local_GPS.longitudeDegrees, 5);
-      
-      Serial.print("Speed (knots): "); Serial.println(local_GPS.speed);
-      Serial.print("Angle: "); Serial.println(local_GPS.angle);
-      Serial.print("Altitude: "); Serial.println(local_GPS.altitude);
-      Serial.print("Satellites: "); Serial.println((int)local_GPS.satellites);
-
-    }
-    }
-    else{
-      Serial.println ("oops I couldn't parse GPS");
-    }
-
+    local_GPS.parse(local_GPS.lastNMEA());
   }
-    if(digitalRead(RED_BUTTON) == HIGH){
+  if(digitalRead(RED_BUTTON) == HIGH){
     digitalWrite(RED_LED, HIGH);
   }
   else{
     digitalWrite(RED_LED, LOW);
-    nav_GPS = BIG_RED_BEE;
+    if(nav_GPS == LOCAL){
+      nav_GPS = BIG_RED_BEE;
+    }
+    else if(nav_GPS == BIG_RED_BEE){
+      nav_GPS = ROCKET_CAN;
+    }
+    else {
+      nav_GPS = LOCAL;
+    }
   }
   if(digitalRead(GREEN_BUTTON) == HIGH){
     digitalWrite(GREEN_LED, HIGH);
   }
   else{
     digitalWrite(GREEN_LED, LOW);
-    nav_GPS = ROCKET_CAN;
+    if(nav_GPS == LOCAL){
+      save_GPS_location(local_GPS.latitudeDegrees, local_GPS.longitudeDegrees, LOCAL);
+    }
+    else if(nav_GPS == BIG_RED_BEE){
+      save_GPS_location(brb_GPS.latitude, brb_GPS.longitude, BIG_RED_BEE);
+    }
+    else {
+      save_GPS_location(CAN_GPS.latitude, CAN_GPS.longitude, ROCKET_CAN);
+    }
   }
   if(digitalRead(BLUE_BUTTON) == HIGH){
     digitalWrite(BLUE_LED, HIGH);
   }
   else{
     digitalWrite(BLUE_LED, LOW);
+    EEPROM_nav_data.nav = !EEPROM_nav_data.nav;
   }
   }
+  
   if(millis() - time_of_last_screen_reset > TIME_BETWEEN_SCREEN_RESET){
     time_of_last_screen_reset = millis();
     display.power_down();

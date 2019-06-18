@@ -21,9 +21,14 @@ void Display::begin(){
 void Display::set_background(){
   tft.fillScreen(ILI9341_WHITE);
   tft.setRotation(1);
+  tft.setCursor(200, 165);
+  tft.setTextColor(ILI9341_BLUE);  tft.setTextSize(2);
+  tft.print("Time: ");
+  tft.setCursor(200, 205);
+  tft.print("Sats:");
 }
 
-void Display::write_GPS(String GPS_name, double time, double latitude, double longditude, bool state){
+void Display::write_GPS(String GPS_name, int time, double latitude, double longditude, bool state){
   if (state)
     tft.setTextColor(ILI9341_MAGENTA); 
   else
@@ -31,26 +36,36 @@ void Display::write_GPS(String GPS_name, double time, double latitude, double lo
   tft.setTextSize(2);
   tft.print(GPS_name);
   tft.setTextColor(ILI9341_RED, ILI9341_WHITE);
-  tft.println(time);
-  tft.print("Lat:");
+  tft.print(time);
+  tft.println(" ");
+  //tft.print("Lat:");
   tft.println(latitude, 5);
-  tft.print("Lon:");
+  //tft.print("Lon:");
   tft.println(longditude, 5);
+  tft.println("");
 }
+
+void Display::clear_GPS(){
+  tft.setTextColor(ILI9341_RED, ILI9341_WHITE);
+  tft.println("        ");
+  tft.println("          ");
+  tft.println("          ");
+}
+
 void Display::write_local_data(int hour, int minutes, int seconds, int num_sats){
-  tft.setTextColor(ILI9341_BLUE);  tft.setTextSize(2);
-  tft.println("Time: ");
+  tft.setCursor(200, 185);
   tft.setTextColor(ILI9341_RED, ILI9341_WHITE);
   tft.print(hour);
   tft.print(":");
   tft.print(minutes);
   tft.print(":");
-  tft.println(seconds);
-  tft.setTextColor(ILI9341_BLUE);
-  tft.print("Sats:");
-  tft.setTextColor(ILI9341_RED, ILI9341_WHITE);
-  tft.println(num_sats);
+  tft.print(seconds);
   tft.print(" ");
+  tft.setTextColor(ILI9341_BLUE);
+  tft.setCursor(250, 205);
+  tft.setTextColor(ILI9341_RED, ILI9341_WHITE);
+  tft.print(num_sats);
+  tft.println(" ");
 }
 
 void Display::draw_arrow(int heading){
@@ -86,7 +101,7 @@ void Display::draw_arrow(int heading){
 
 */
     tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);  
-    tft.setTextSize(6); // 4 when drawing arrow
+    tft.setTextSize(5); // 4 when drawing arrow
     tft.setCursor(160, 50); // (240, 1) when drawing arrow
     tft.print(heading);
     tft.print("  ");

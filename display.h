@@ -23,7 +23,8 @@ class Display {
     void power_down();
     void begin();
     void set_background();
-    void write_GPS(String GPS_name, double time, double latitude, double longditude, bool state);
+    void write_GPS(String GPS_name, int time, double latitude, double longditude, bool state);
+    void clear_GPS();
     void write_local_data(int hour, int minutes, int seconds, int num_sats);
     void draw_arrow(int heading);
 };
