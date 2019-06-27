@@ -35,7 +35,7 @@ void BigRedBee::parse_data(){
   unsigned int start_time = millis();
   if(radio_serial->available() >= 72){
     if(radio_serial->find('$')){     //find the begining of the next string
-      radio_serial->find(',');      //skip the "BRBTX
+    if(radio_serial->readStringUntil(',') == "BRBTX"){  // confirm it is a bigRedBee GPS sentance
       radio_serial->find(',');     //skip the ID because I don't care
       while(radio_serial->available() == 0){
         if(millis() - start_time > TIMEOUT)
@@ -120,9 +120,10 @@ void BigRedBee::parse_data(){
       Serial.println("///////////////////////");
       #endif
       
-    }
     time_of_last_msg = millis();
-      }
+    }
+    }
+    }
     }
 
 long BigRedBee::time_since_last_msg(){

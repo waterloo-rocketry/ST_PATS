@@ -106,8 +106,10 @@ void loop(void)
   if(millis() - time_of_last_update > TIME_BETWEEN_UPDATES){
     time_of_last_update = millis();
 
-    brb_GPS.parse_data();
-
+    for(int index = 0; index < 20; index++){
+      brb_GPS.parse_data();
+    }
+    
     compass.read();
     //display.draw_arrow(compass.get_heading());
 
