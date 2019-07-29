@@ -191,7 +191,11 @@ long RocketCAN::time_since_last_msg(){
   return millis() - time_of_last_msg;
 }
 void RocketCAN::log_to_sd(){
+  char str_longitude[10];
+  dtostrf(longitude, 0, 6, str_longitude);
+  char str_latitude[10];
+  dtostrf(latitude, 0, 6, str_latitude);
   char message[256];
-  sprintf(message, "\nRocketCAN: \nlongitude: %f \nlatitude: %f \n", longitude, latitude);
+  sprintf(message, "\nRocketCAN: \nlongitude: %s \nlatitude: %s \n", str_longitude, str_latitude);
   ST_PATSlog(message);
 }

@@ -503,7 +503,15 @@ boolean Adafruit_GPS::wakeup(void) {
 
 //Rocketry Stuff!!
 void Adafruit_GPS::log_to_sd(){
+  char str_longitude[10];
+  dtostrf(longitudeDegrees, 0, 6, str_longitude);
+  char str_latitude[10];
+  dtostrf(latitudeDegrees, 0, 6, str_latitude);
+  char str_altitude[10];
+  dtostrf(altitude, 0, 6, str_altitude);
+  char str_HDOP[10];
+  dtostrf(HDOP, 0, 6, str_HDOP);
   char message[512];
-  sprintf(message, "\nLocal GPS: \nTime: %d:%d:%d \nNum sats: %d \nlongitude: %f \nlatitude: %f \naltitude: %f \nHDOP: %f \n", hour, minute, seconds, satellites, longitudeDegrees, latitudeDegrees, altitude, HDOP);
+  sprintf(message, "\nLocal GPS: \nTime: %d:%d:%d \nNum sats: %d \nlongitude: %s \nlatitude: %s \naltitude: %s \nHDOP: %s \n", hour, minute, seconds, satellites, str_longitude, str_latitude, str_altitude, str_HDOP);
   ST_PATSlog(message);
 }

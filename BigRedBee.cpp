@@ -131,7 +131,15 @@ long BigRedBee::time_since_last_msg(){
 }
 
 void BigRedBee::log_to_sd(){
+  char str_longitude[10];
+  dtostrf(longitude, 0, 6, str_longitude);
+  char str_latitude[10];
+  dtostrf(latitude, 0, 6, str_latitude);
+  char str_HDOP[10];
+  dtostrf(HDOP, 0, 6, str_HDOP);
+  char str_VDOP[10];
+  dtostrf(VDOP, 0, 6, str_VDOP);
   char message[512];
-  sprintf(message, "\nBigRedBee: \nTime: %d \nNum sats: %d \nlongitude: %f \nlatitude: %f \naltitude: %d \nHDOP: %f \nVDOP: %f \nVbat: %d \n", time, num_sats, longitude, latitude, altitude, HDOP, VDOP, Vbat);
+  sprintf(message, "\nBigRedBee: \nTime: %d \nNum sats: %d \nlongitude: %s \nlatitude: %s \naltitude: %d \nHDOP: %s \nVDOP: %s \nVbat: %d \n", time, num_sats, str_longitude, str_latitude, altitude, str_HDOP, str_VDOP, Vbat);
   ST_PATSlog(message);
 }

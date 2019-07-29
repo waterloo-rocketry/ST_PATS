@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SD_CHIP_SELECT PE2
+#define SD_CHIP_SELECT PE12
 
 void sd_init();
 

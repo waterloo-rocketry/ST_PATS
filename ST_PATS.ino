@@ -43,12 +43,15 @@ Display display;
 
 Compass compass;
 
+//BigRedBee serial line definition
 HardwareSerial Serial5(PD2, PC12);
 BigRedBee brb_GPS(&Serial5);
 
+//RocketCAN serial line definition
 HardwareSerial Serial4(PC11, PC10);
 RocketCAN CAN_GPS(&Serial4);
 
+//Adafruit_GPS serial line definition
 HardwareSerial Serial3(PC5, PC4);
 Adafruit_GPS local_GPS(&Serial3);
 
