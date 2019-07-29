@@ -4,6 +4,7 @@
 #define BIG_RED_BEE_H
 
 #include "Arduino.h"
+#include "sd_handler.h"
 
 #define TIMEOUT 500 
 //#define SERIAL_DEBUGING
@@ -27,6 +28,8 @@ class BigRedBee {
     void begin(int baud);
     
     void parse_data();
+
+    void log_to_sd();
     
    /*
    * returns how long its been since we got a new GPS message in ms

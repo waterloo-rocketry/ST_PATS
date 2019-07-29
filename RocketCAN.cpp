@@ -190,3 +190,8 @@ void RocketCAN::minutes_to_degrees(){
 long RocketCAN::time_since_last_msg(){
   return millis() - time_of_last_msg;
 }
+void RocketCAN::log_to_sd(){
+  char message[256];
+  sprintf(message, "\nRocketCAN: \nlongitude: %f \nlatitude: %f \n", longitude, latitude);
+  ST_PATSlog(message);
+}

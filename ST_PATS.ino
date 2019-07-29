@@ -1,5 +1,5 @@
 /*
- * IMPORTANT: In addition to the required libraries the serial RX buffer needs to be set to 256 bytes instead of 64
+ * IMPORTANT: In addition to the required libraries the serial RX buffer needs to be set to 256(might need to be 4096 if dealing with BigRedBee in debug mode bytes instead of 64
  * you should find this number in HardwareSerial.h at somewhere like this:
  * ...\ArduinoData\packages\STM32\hardware\stm32\1.4.0\cores\arduino
  */
@@ -11,7 +11,8 @@
 #include "compass.h"
 #include "navigation.h"
 #include "EEPROM_storage.h"
-#include <Adafruit_GPS.h>
+#include "sd_handler.h"
+#include "Adafruit_GPS_modded.h"
 
 #define TIME_BETWEEN_UPDATES 1000 // in ms
 #define TIME_BETWEEN_SCREEN_RESET 60000 // in ms
@@ -84,6 +85,7 @@ void setup(void)
   brb_GPS.begin(9600);
   CAN_GPS.begin(9600);
   compass.begin();
+  sd_init();
 
   /* lets set up our interupt timer for reading all the UART data */
   Timer_Handler.timer = TIM4;
@@ -106,9 +108,14 @@ void loop(void)
   if(millis() - time_of_last_update > TIME_BETWEEN_UPDATES){
     time_of_last_update = millis();
 
+    //Parse the BigRedBee input
     for(int index = 0; index < 20; index++){
       brb_GPS.parse_data();
     }
+    brb_GPS.log_to_sd();
+
+    CAN_GPS.log_to_sd();
+
     
     compass.read();
     //display.draw_arrow(compass.get_heading());
@@ -170,6 +177,11 @@ void loop(void)
   if (local_GPS.newNMEAreceived()) {
     local_GPS.parse(local_GPS.lastNMEA());
   }
+  local_GPS.log_to_sd();
+
+  /*
+   * Do stuff if buttons are pressed
+   */
   if(digitalRead(RED_BUTTON) == HIGH){
     digitalWrite(RED_LED, HIGH);
   }

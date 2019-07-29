@@ -129,3 +129,9 @@ void BigRedBee::parse_data(){
 long BigRedBee::time_since_last_msg(){
   return millis() - time_of_last_msg;
 }
+
+void BigRedBee::log_to_sd(){
+  char message[512];
+  sprintf(message, "\nBigRedBee: \nTime: %d \nNum sats: %d \nlongitude: %f \nlatitude: %f \naltitude: %d \nHDOP: %f \nVDOP: %f \nVbat: %d \n", time, num_sats, longitude, latitude, altitude, HDOP, VDOP, Vbat);
+  ST_PATSlog(message);
+}

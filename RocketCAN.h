@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "Arduino.h"
+#include "sd_handler.h"
 
 #define GPS_MSG_LEN 11
 #define GPS_MSG_HEADER '$'
@@ -30,15 +31,22 @@ class RocketCAN {
  */
   void begin(int baud);
 
-/*
- * checks if there is a char to read then reads it and procceses it  if possible.
- */
+  /*
+   * checks if there is a char to read then reads it and procceses it  if possible.
+   */
   bool read();
 
   /*
    * returns how long its been since we got a new GPS message in ms
    */
-   long time_since_last_msg();
+  long time_since_last_msg();
+
+  /*
+   * logs all the RocketCAN GPS data to SD
+   */
+  void log_to_sd();
+
+   
   private:
 
 /*
