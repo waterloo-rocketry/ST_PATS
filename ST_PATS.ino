@@ -15,7 +15,7 @@
 #include "Adafruit_GPS_modded.h"
 
 #define TIME_BETWEEN_UPDATES 1000 // in ms
-#define TIME_BETWEEN_SCREEN_RESET 60000 // in ms
+#define TIME_BETWEEN_SCREEN_RESET 60000*15 // in ms
 
 #define RED_BUTTON PB11
 #define GREEN_BUTTON PB10
@@ -119,6 +119,8 @@ void loop(void)
 
     CAN_GPS.log_to_sd();
 
+    flush();
+
     
     compass.read();
     //display.draw_arrow(compass.get_heading());
@@ -172,9 +174,6 @@ void loop(void)
     }
 
     display.write_local_data(local_GPS.hour, local_GPS.minute, local_GPS.seconds, local_GPS.satellites);
-
-    Serial.print("Compass Heading: ");
-    Serial.println(compass.get_heading());
   
   // if a sentence is received, we can check the checksum, parse it...
   if (local_GPS.newNMEAreceived()) {
@@ -231,6 +230,7 @@ void loop(void)
     display.power_up();
     display.begin();
     display.set_background();
+    sd_init();
   }
 
 }

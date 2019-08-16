@@ -112,8 +112,13 @@ char header[header_len];
 
 //The important one!
 void ST_PATSlog(const char* message){
-    if(!working)
-        return;
+    if(!working){
+#ifdef SD_SERIAL_LOG
+      Serial.println("Call to ST_PATSlog ERROR, NOT WORKING");
+#endif
+      return;
+    }
+
 #ifdef SD_SERIAL_LOG
     Serial.println("Call to ST_PATSlog");
     Serial.println(message);
