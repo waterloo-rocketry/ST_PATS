@@ -7,6 +7,8 @@
 
 void sd_init();
 
+void sd_reboot();
+
 //returns true if logging is working
 uint8_t sd_active();
 uint8_t sd_buffer_dirty();

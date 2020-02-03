@@ -15,7 +15,7 @@
 #include "Adafruit_GPS_modded.h"
 
 #define TIME_BETWEEN_UPDATES 1000 // in ms
-#define TIME_BETWEEN_SCREEN_RESET 60000*15 // in ms
+#define TIME_BETWEEN_SCREEN_RESET 60000*1 // in ms
 
 #define RED_BUTTON PB11
 #define GREEN_BUTTON PB10
@@ -230,7 +230,7 @@ void loop(void)
     display.power_up();
     display.begin();
     display.set_background();
-    sd_init();
+    sd_reboot();
   }
 
 }

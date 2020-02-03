@@ -98,6 +98,23 @@ void sd_init() {
     flush();
 }
 
+void sd_reboot(){
+  if (!SD.begin(SD_CHIP_SELECT)) {
+#ifdef SD_SERIAL_LOG
+        Serial.println("couldn't restart SD card");
+#endif
+        return;
+  }
+
+  output_log = SD.open("/");
+    if(output_log){
+#ifdef SD_SERIAL_LOG
+        Serial.println("successfully reopened root");
+        Serial.flush();
+#endif
+    }
+}
+
 uint8_t sd_active(){
     return working;
 }
