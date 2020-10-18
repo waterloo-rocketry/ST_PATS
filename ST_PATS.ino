@@ -52,13 +52,12 @@ HardwareSerial Serial3(PC5, PC4);
 Adafruit_GPS local_GPS(&Serial3);
 
 /* timer stuff */
-static stimer_t Timer_Handler;
+HardwareTimer *GPS_Timer = new HardwareTimer(TIM4);
 
 /*
  * Function for parsing all the gps data once per millisecond.
- * unused is a pointer to stimer_t or something, whatever it is we just have it to make function definitions happy
  */
-static void read_gps_data(stimer_t *unused){
+static void read_gps_data(void){
   char c = local_GPS.read();
   CAN_GPS.read();
 }
@@ -86,10 +85,10 @@ void setup(void)
   compass.begin();
 
   /* lets set up our interupt timer for reading all the UART data */
-  Timer_Handler.timer = TIM4;
   /* Timer set to 1ms, */
-  TimerHandleInit(&Timer_Handler, 1, (uint32_t)(getTimerClkFreq(TIM4) / 1000));
-  attachIntHandle(&Timer_Handler, read_gps_data);
+  GPS_Timer->setOverflow(1000, MICROSEC_FORMAT);
+  GPS_Timer->attachInterrupt(read_gps_data);
+  GPS_Timer->resume();
 
   pinMode(RED_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
