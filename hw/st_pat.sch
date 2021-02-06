@@ -67,12 +67,12 @@ $EndComp
 $Comp
 L power:GND #PWR03
 U 1 1 60187238
-P 1050 3050
-F 0 "#PWR03" H 1050 2800 50  0001 C CNN
-F 1 "GND" H 1055 2877 50  0000 C CNN
-F 2 "" H 1050 3050 50  0001 C CNN
-F 3 "" H 1050 3050 50  0001 C CNN
-	1    1050 3050
+P 1000 3050
+F 0 "#PWR03" H 1000 2800 50  0001 C CNN
+F 1 "GND" H 1005 2877 50  0000 C CNN
+F 2 "" H 1000 3050 50  0001 C CNN
+F 3 "" H 1000 3050 50  0001 C CNN
+	1    1000 3050
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -190,7 +190,6 @@ F 3 "" H 2700 4950 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	2700 4950 3000 4950
-NoConn ~ 3000 5150
 NoConn ~ 3000 5250
 $Comp
 L power:GND #PWR015
@@ -223,17 +222,6 @@ $EndComp
 Wire Wire Line
 	6250 1800 6450 1800
 $Comp
-L power:VBUS #PWR010
-U 1 1 601756EE
-P 6250 2000
-F 0 "#PWR010" H 6250 1850 50  0001 C CNN
-F 1 "VBUS" H 6000 2050 50  0000 L CNN
-F 2 "" H 6250 2000 50  0001 C CNN
-F 3 "" H 6250 2000 50  0001 C CNN
-	1    6250 2000
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR013
 U 1 1 60181D61
 P 8200 2000
@@ -246,8 +234,6 @@ F 3 "" H 8200 2000 50  0001 C CNN
 $EndComp
 Text Notes 5400 1400 0    50   ~ 0
 FEATHER PINS
-Wire Wire Line
-	6250 2000 6450 2000
 Wire Wire Line
 	5250 1800 5500 1800
 $Comp
@@ -292,15 +278,15 @@ SDA
 Text Label 6450 2800 2    50   ~ 0
 SCI
 Text Label 6450 2700 2    50   ~ 0
-D5
+SHARP_CS_D5
 Text Label 6450 2600 2    50   ~ 0
-D6
+SHARP_DISP_D6
 Text Label 6450 2500 2    50   ~ 0
-D9
+GPS_RST_D9
 Text Label 6450 2400 2    50   ~ 0
-D10
+GPS_FIX_D10
 Text Label 6450 2300 2    50   ~ 0
-D11
+GPS_PPS_D11
 Text Label 6450 2200 2    50   ~ 0
 D12
 Text Label 6450 2100 2    50   ~ 0
@@ -318,17 +304,9 @@ MOSI
 Text Label 5500 2300 2    50   ~ 0
 SCK
 Text Label 5500 2400 2    50   ~ 0
-A5
+CPS_RDY_A5
 Text Label 5500 2500 2    50   ~ 0
-A4
-Text Label 5500 2600 2    50   ~ 0
-A3
-Text Label 5500 2700 2    50   ~ 0
-A2
-Text Label 5500 2800 2    50   ~ 0
-A1
-Text Label 5500 2900 2    50   ~ 0
-A0
+CPS_CS_A4
 Text Label 5500 3100 2    50   ~ 0
 AREF
 Text Label 5500 3300 2    50   ~ 0
@@ -387,148 +365,194 @@ Wire Wire Line
 	1750 2450 1700 2450
 Wire Wire Line
 	1700 2450 1700 2700
-Text GLabel 6250 2500 0    50   Input ~ 0
-GPS_RST
 Wire Wire Line
-	6250 2500 6450 2500
-Text GLabel 1750 2000 0    50   Input ~ 0
-GPS_RST
-Text GLabel 6250 2400 0    50   Input ~ 0
-GPS_FIX
-Wire Wire Line
-	6250 2400 6450 2400
-Text GLabel 1600 2450 0    50   Input ~ 0
-GPS_FIX
-Wire Wire Line
-	1600 2450 1700 2450
-Connection ~ 1700 2450
-Wire Wire Line
-	1750 2150 1250 2150
-Text GLabel 1750 3050 0    50   Input ~ 0
-RX
-Text GLabel 1750 3200 0    50   Input ~ 0
-TX
-Text GLabel 2800 2900 2    50   Input ~ 0
-GPS_PPS
-Text GLabel 6250 2300 0    50   Input ~ 0
-GPS_PPS
-Wire Wire Line
-	6250 2300 6450 2300
-Text GLabel 8850 2500 0    50   Input ~ 0
-SHARP_DISP
-Text GLabel 6250 2600 0    50   Input ~ 0
-SHARP_DISP
-Wire Wire Line
-	6250 2600 6450 2600
-Text GLabel 8850 2300 0    50   Input ~ 0
-SHARP_CS
-Text GLabel 6250 2700 0    50   Input ~ 0
-SHARP_CS
-Wire Wire Line
-	6250 2700 6450 2700
-Text GLabel 5300 1900 0    50   Input ~ 0
-TX
-Text GLabel 5300 2000 0    50   Input ~ 0
-RX
-Wire Wire Line
-	5300 2000 5500 2000
-Wire Wire Line
-	5300 1900 5500 1900
-Text GLabel 5300 2100 0    50   Input ~ 0
-MISO
-Text GLabel 5300 2200 0    50   Input ~ 0
-MOSI
-Wire Wire Line
-	5300 2200 5500 2200
-Wire Wire Line
-	5300 2100 5500 2100
-Text GLabel 5300 2400 0    50   Input ~ 0
-CPS_RDY
-Wire Wire Line
-	5300 2400 5500 2400
-Text GLabel 5300 2500 0    50   Input ~ 0
-CPS_CS
-Wire Wire Line
-	5300 2500 5500 2500
-Text GLabel 2100 5000 0    50   Input ~ 0
-CPS_RDY
-Text GLabel 2100 5100 0    50   Input ~ 0
-MISO
-Text GLabel 2100 5200 0    50   Input ~ 0
-CPS_CS
-Text GLabel 5300 2300 0    50   Input ~ 0
-SCK
-Wire Wire Line
-	5300 2300 5500 2300
-Text GLabel 3000 5050 0    50   Input ~ 0
-SCK
-Text GLabel 8850 2100 0    50   Input ~ 0
-SCK
-Text GLabel 8850 2200 0    50   Input ~ 0
-MOSI
+	1750 2150 1200 2150
 NoConn ~ 2800 3200
 NoConn ~ 1750 2300
 $Comp
 L Device:C_Small C1
 U 1 1 601E1CF3
-P 1050 2000
-F 0 "C1" H 900 2100 50  0000 L CNN
-F 1 "1uF" H 850 1900 50  0000 L CNN
-F 2 "" H 1050 2000 50  0001 C CNN
-F 3 "~" H 1050 2000 50  0001 C CNN
-	1    1050 2000
+P 1000 2000
+F 0 "C1" H 850 2100 50  0000 L CNN
+F 1 "1uF" H 1000 1900 50  0000 L CNN
+F 2 "" H 1000 2000 50  0001 C CNN
+F 3 "~" H 1000 2000 50  0001 C CNN
+	1    1000 2000
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:C_Small C2
 U 1 1 601E34E0
-P 1250 2000
-F 0 "C2" H 1100 2100 50  0000 L CNN
-F 1 "0.01uF" H 1200 1800 50  0000 L CNN
-F 2 "" H 1250 2000 50  0001 C CNN
-F 3 "~" H 1250 2000 50  0001 C CNN
-	1    1250 2000
+P 1200 2000
+F 0 "C2" H 1050 2100 50  0000 L CNN
+F 1 "0.01uF" H 1250 1900 50  0000 L CNN
+F 2 "" H 1200 2000 50  0001 C CNN
+F 3 "~" H 1200 2000 50  0001 C CNN
+	1    1200 2000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	1450 1850 1250 1850
+	1450 1850 1200 1850
 Wire Wire Line
-	1050 1850 1050 1900
-Connection ~ 1450 1850
+	1000 1850 1000 1900
 Wire Wire Line
-	1250 1900 1250 1850
-Connection ~ 1250 1850
+	1200 1900 1200 1850
 Wire Wire Line
-	1250 1850 1050 1850
+	1200 1850 1000 1850
 Wire Wire Line
-	1250 2100 1250 2150
-Connection ~ 1250 2150
+	1200 2100 1200 2150
 Wire Wire Line
-	1250 2150 1050 2150
+	1200 2150 1000 2150
 Wire Wire Line
-	1050 2100 1050 2150
+	1000 2100 1000 2150
 Wire Wire Line
-	1050 3050 1050 2900
+	1000 3050 1000 2900
 Wire Wire Line
-	1050 2900 1750 2900
+	1000 2900 1750 2900
 $Comp
 L Device:R_US R1
 U 1 1 60234526
-P 1250 2700
-F 0 "R1" V 1350 2700 50  0000 C CNN
-F 1 "330" V 1150 2700 50  0000 C CNN
-F 2 "" V 1290 2690 50  0001 C CNN
-F 3 "~" H 1250 2700 50  0001 C CNN
-	1    1250 2700
+P 1200 2700
+F 0 "R1" V 1300 2700 50  0000 C CNN
+F 1 "330" V 1100 2700 50  0000 C CNN
+F 2 "" V 1240 2690 50  0001 C CNN
+F 3 "~" H 1200 2700 50  0001 C CNN
+	1    1200 2700
 	0    1    1    0   
 $EndComp
-Connection ~ 1050 2900
-Connection ~ 1050 2150
+Connection ~ 1000 2900
+Connection ~ 1000 2150
 Wire Wire Line
-	1100 2700 1050 2700
+	1050 2700 1000 2700
 Wire Wire Line
-	1050 2900 1050 2700
+	1000 2900 1000 2700
 Wire Wire Line
-	1050 2700 1050 2150
-Connection ~ 1050 2700
+	1000 2700 1000 2150
+Connection ~ 1000 2700
+Text Label 8850 2100 2    50   ~ 0
+SCK
+Text Label 8850 2200 2    50   ~ 0
+MOSI
+Text Label 8850 2300 2    50   ~ 0
+SHARP_CS_D5
+Text Label 8850 2500 2    50   ~ 0
+SHARP_DISP_D6
+Text Label 2800 2900 0    50   ~ 0
+GPS_PPS_D11
+Text Label 1750 3200 2    50   ~ 0
+TX
+Text Label 1650 2450 2    50   ~ 0
+GPS_FIX_D10
+Text Label 1750 2000 2    50   ~ 0
+GPS_RST_D9
+Text Label 1750 3050 2    50   ~ 0
+RX
+Wire Wire Line
+	1650 2450 1700 2450
+Connection ~ 1700 2450
+Connection ~ 1200 1850
+Connection ~ 1200 2150
+Connection ~ 1450 1850
+Wire Wire Line
+	1400 2700 1350 2700
+Text Label 2100 5000 2    50   ~ 0
+CPS_RDY_A5
+Text Label 2100 5200 2    50   ~ 0
+CPS_CS_A4
+Text Label 2100 5100 2    50   ~ 0
+MISO
+Text Label 3000 5050 2    50   ~ 0
+SCK
+NoConn ~ 6450 1900
+NoConn ~ 6450 2100
+NoConn ~ 6450 2200
+NoConn ~ 6450 2800
+NoConn ~ 6450 2900
+NoConn ~ 5500 3300
+NoConn ~ 5500 2900
+NoConn ~ 5500 2800
+NoConn ~ 5500 2700
+NoConn ~ 5500 2600
+Text Label 5500 2900 2    50   ~ 0
+A0
+Text Label 5500 2800 2    50   ~ 0
+A1
+Text Label 5500 2700 2    50   ~ 0
+A2
+Text Label 5500 2600 2    50   ~ 0
+A3
+Text Label 3000 5150 2    50   ~ 0
+MOSI
+Text Notes 1800 7100 2    50   ~ 0
+MAKES ERC HAPPY
+$Comp
+L power:PWR_FLAG #FLG0101
+U 1 1 602045BA
+P 1850 7350
+F 0 "#FLG0101" H 1850 7425 50  0001 C CNN
+F 1 "PWR_FLAG" H 1850 7523 50  0000 C CNN
+F 2 "" H 1850 7350 50  0001 C CNN
+F 3 "~" H 1850 7350 50  0001 C CNN
+	1    1850 7350
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG0102
+U 1 1 60204D20
+P 1450 7350
+F 0 "#FLG0102" H 1450 7425 50  0001 C CNN
+F 1 "PWR_FLAG" H 1450 7523 50  0000 C CNN
+F 2 "" H 1450 7350 50  0001 C CNN
+F 3 "~" H 1450 7350 50  0001 C CNN
+	1    1450 7350
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR0104
+U 1 1 60205316
+P 1850 7350
+F 0 "#PWR0104" H 1850 7200 50  0001 C CNN
+F 1 "+3V3" H 1865 7523 50  0000 C CNN
+F 2 "" H 1850 7350 50  0001 C CNN
+F 3 "" H 1850 7350 50  0001 C CNN
+	1    1850 7350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR0105
+U 1 1 60205FF4
+P 1450 7350
+F 0 "#PWR0105" H 1450 7200 50  0001 C CNN
+F 1 "+BATT" H 1465 7523 50  0000 C CNN
+F 2 "" H 1450 7350 50  0001 C CNN
+F 3 "" H 1450 7350 50  0001 C CNN
+	1    1450 7350
+	1    0    0    -1  
+$EndComp
+NoConn ~ 5500 3100
+Text Label 6450 2000 2    50   ~ 0
+VBUS
+NoConn ~ 6450 2000
+$Comp
+L power:GND #PWR0103
+U 1 1 601FE51F
+P 1050 7350
+F 0 "#PWR0103" H 1050 7100 50  0001 C CNN
+F 1 "GND" H 1055 7177 50  0000 C CNN
+F 2 "" H 1050 7350 50  0001 C CNN
+F 3 "" H 1050 7350 50  0001 C CNN
+	1    1050 7350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG0103
+U 1 1 6020CF02
+P 1050 7350
+F 0 "#FLG0103" H 1050 7425 50  0001 C CNN
+F 1 "PWR_FLAG" H 1050 7523 50  0000 C CNN
+F 2 "" H 1050 7350 50  0001 C CNN
+F 3 "~" H 1050 7350 50  0001 C CNN
+	1    1050 7350
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
