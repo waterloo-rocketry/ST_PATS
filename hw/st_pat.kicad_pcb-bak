@@ -2,7 +2,7 @@
 
   (general
     (thickness 1.6)
-    (drawings 2)
+    (drawings 3)
     (tracks 0)
     (zones 0)
     (modules 17)
@@ -198,7 +198,7 @@
     (add_net "Net-(U2-PadP2_8)")
   )
 
-  (module st_pats:MODULE_FEATHER_M0_BASIC_PROTO (layer F.Cu) (tedit 6029AA39) (tstamp 602A36A9)
+  (module st_pats:MODULE_FEATHER_M0_BASIC_PROTO (layer F.Cu) (tedit 6029AA39) (tstamp 602A35BC)
     (at 140.97 67.31 270)
     (path /602C87A2)
     (fp_text reference U2 (at -19.725 -13.275 90) (layer F.SilkS)
@@ -933,6 +933,18 @@
     (arrow1b (pts (xy 97.79 110.49) (xy 98.376421 109.363496)))
     (arrow2a (pts (xy 97.79 97.79) (xy 97.203579 98.916504)))
     (arrow2b (pts (xy 97.79 97.79) (xy 98.376421 98.916504)))
+  )
+  (dimension 20.32 (width 0.15) (layer Dwgs.User) (tstamp 602A217D)
+    (gr_text "0.8 in" (at 142.24 123.22) (layer Dwgs.User) (tstamp 602A217D)
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (feature1 (pts (xy 152.4 113.03) (xy 152.4 122.506421)))
+    (feature2 (pts (xy 132.08 113.03) (xy 132.08 122.506421)))
+    (crossbar (pts (xy 132.08 121.92) (xy 152.4 121.92)))
+    (arrow1a (pts (xy 152.4 121.92) (xy 151.273496 122.506421)))
+    (arrow1b (pts (xy 152.4 121.92) (xy 151.273496 121.333579)))
+    (arrow2a (pts (xy 132.08 121.92) (xy 133.206504 122.506421)))
+    (arrow2b (pts (xy 132.08 121.92) (xy 133.206504 121.333579)))
   )
 
 )
