@@ -1,5 +1,4 @@
 (sym_lib_table
   (lib (name st_pat)(type Legacy)(uri ${KIPRJMOD}/st_pat.lib)(options "")(descr ""))
-  (lib (name st_pat-rescue)(type Legacy)(uri ${KIPRJMOD}/st_pat-rescue.lib)(options "")(descr ""))
   (lib (name FEATHER_M0_BASIC_PROTO)(type Legacy)(uri ${KIPRJMOD}/FEATHER_M0_BASIC_PROTO.lib)(options "")(descr ""))
 )
