@@ -242,11 +242,11 @@ SHARP_DISP_D6
 Text Label 2800 2950 0    50   ~ 0
 GPS_PPS_D12
 Text Label 1750 3250 2    50   ~ 0
-TX
+GPS_RX
 Text Label 1600 2800 2    50   ~ 0
 GPS_FIX_D11
 Text Label 1750 3100 2    50   ~ 0
-RX
+GPS_TX
 Connection ~ 1150 1900
 Connection ~ 1150 2200
 Text Label 6000 4550 0    50   ~ 0
@@ -525,9 +525,9 @@ Wire Wire Line
 Wire Wire Line
 	6700 1950 6600 1950
 Text Label 4200 3250 2    50   ~ 0
-RX
+GPS_TX
 Text Label 4200 3350 2    50   ~ 0
-TX
+GPS_RX
 Text Label 4200 3150 2    50   ~ 0
 MISO
 Text Label 4200 3050 2    50   ~ 0
@@ -719,4 +719,6 @@ NoConn ~ 6600 3250
 NoConn ~ 6600 3350
 Text Notes 900  3800 0    50   ~ 0
 not hooking GPS reset to the rest\nto allow resetting MCU while\nkeeping GPS fix
+Text Notes 6950 3350 0    50   ~ 0
+P2_8 (D9) IS BATTERY MONITOR, DO NOT USE
 $EndSCHEMATC
