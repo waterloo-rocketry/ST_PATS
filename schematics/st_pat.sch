@@ -544,11 +544,11 @@ Text Notes 4950 1350 0    50   ~ 0
 FEATHER M0 ADALOGGER
 NoConn ~ 4750 4700
 $Comp
-L st_pat:Sharp_Display U4
+L st_pat:Sharp_Display_4694 U4
 U 1 1 602ACB65
 P 8900 1750
 F 0 "U4" H 9125 1865 50  0000 C CNN
-F 1 "Sharp_Display" H 9125 1774 50  0000 C CNN
+F 1 "Sharp_Display_4694" H 9125 1774 50  0000 C CNN
 F 2 "st_pat:Sharp_Display" H 8900 1750 50  0001 C CNN
 F 3 "" H 8900 1750 50  0001 C CNN
 	1    8900 1750

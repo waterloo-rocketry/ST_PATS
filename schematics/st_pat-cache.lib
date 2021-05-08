@@ -280,11 +280,11 @@ X CS 7 600 -250 100 L 50 50 1 1 I
 ENDDRAW
 ENDDEF
 #
-# st_pat_Sharp_Display
+# st_pat_Sharp_Display_4694
 #
-DEF st_pat_Sharp_Display U 0 40 Y Y 1 F N
-F0 "U" 0 0 50 H V C CNN
-F1 "st_pat_Sharp_Display" 0 0 50 H V C CNN
+DEF st_pat_Sharp_Display_4694 U 0 40 Y Y 1 F N
+F0 "U" 200 100 50 H V C CNN
+F1 "st_pat_Sharp_Display_4694" 150 0 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
