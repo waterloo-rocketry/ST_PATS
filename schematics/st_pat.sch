@@ -721,4 +721,12 @@ Text Notes 900  3800 0    50   ~ 0
 not hooking GPS reset to the rest\nto allow resetting MCU while\nkeeping GPS fix
 Text Notes 6950 3350 0    50   ~ 0
 P2_8 (D9) IS BATTERY MONITOR, DO NOT USE
+Text Notes 1100 1550 0    50   ~ 0
+25mA
+Text Notes 7050 1450 0    50   ~ 0
+Estimate 50mA
+Text Notes 8200 1750 0    50   ~ 0
+53uA
+Text Notes 4100 4400 0    50   ~ 0
+100uA
 $EndSCHEMATC
