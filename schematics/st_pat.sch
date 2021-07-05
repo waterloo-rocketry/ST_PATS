@@ -13,68 +13,30 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L st_pat:FGPMMOPA6H U1
-U 1 1 600D122C
-P 2200 1650
-F 0 "U1" H 2275 1715 50  0000 C CNN
-F 1 "FGPMMOPA6H" H 2275 1624 50  0000 C CNN
-F 2 "st_pat:FGPMMOPA6H" H 2200 1650 50  0001 C CNN
-F 3 "https://cdn-shop.adafruit.com/datasheets/GlobalTop-FGPMMOPA6H-Datasheet-V0A.pdf" H 2200 1650 50  0001 C CNN
-	1    2200 1650
-	1    0    0    -1  
-$EndComp
 Text Notes 9400 1450 2    50   ~ 0
 SHARP DISPLAY
 $Comp
 L power:+3V3 #PWR01
 U 1 1 60185239
-P 950 1750
-F 0 "#PWR01" H 950 1600 50  0001 C CNN
-F 1 "+3V3" H 965 1923 50  0000 C CNN
-F 2 "" H 950 1750 50  0001 C CNN
-F 3 "" H 950 1750 50  0001 C CNN
-	1    950  1750
+P 2750 1900
+F 0 "#PWR01" H 2750 1750 50  0001 C CNN
+F 1 "+3V3" H 2765 2073 50  0000 C CNN
+F 2 "" H 2750 1900 50  0001 C CNN
+F 3 "" H 2750 1900 50  0001 C CNN
+	1    2750 1900
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR03
 U 1 1 60187238
-P 950 3300
-F 0 "#PWR03" H 950 3050 50  0001 C CNN
-F 1 "GND" H 955 3127 50  0000 C CNN
-F 2 "" H 950 3300 50  0001 C CNN
-F 3 "" H 950 3300 50  0001 C CNN
-	1    950  3300
+P 2250 2550
+F 0 "#PWR03" H 2250 2300 50  0001 C CNN
+F 1 "GND" H 2255 2377 50  0000 C CNN
+F 2 "" H 2250 2550 50  0001 C CNN
+F 3 "" H 2250 2550 50  0001 C CNN
+	1    2250 2550
 	1    0    0    -1  
 $EndComp
-$Comp
-L power:GND #PWR05
-U 1 1 60187F6E
-P 3050 2050
-F 0 "#PWR05" H 3050 1800 50  0001 C CNN
-F 1 "GND" H 3055 1877 50  0000 C CNN
-F 2 "" H 3050 2050 50  0001 C CNN
-F 3 "" H 3050 2050 50  0001 C CNN
-	1    3050 2050
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3050 2050 2800 2050
-$Comp
-L power:GND #PWR06
-U 1 1 601889EB
-P 3050 3100
-F 0 "#PWR06" H 3050 2850 50  0001 C CNN
-F 1 "GND" H 3055 2927 50  0000 C CNN
-F 2 "" H 3050 3100 50  0001 C CNN
-F 3 "" H 3050 3100 50  0001 C CNN
-	1    3050 3100
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3050 3100 2800 3100
-NoConn ~ 2800 2800
 $Comp
 L power:GND #PWR014
 U 1 1 60196448
@@ -185,52 +147,6 @@ Text Label 6600 2650 0    50   ~ 0
 GPS_PPS_D12
 Text Label 4200 1950 2    50   ~ 0
 RST
-Wire Wire Line
-	950  1900 950  1750
-Wire Wire Line
-	1750 2200 1150 2200
-NoConn ~ 2800 3250
-NoConn ~ 1750 2350
-$Comp
-L Device:C_Small C1
-U 1 1 601E1CF3
-P 950 2050
-F 0 "C1" H 800 2150 50  0000 L CNN
-F 1 "1uF" H 950 1950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 950 2050 50  0001 C CNN
-F 3 "~" H 950 2050 50  0001 C CNN
-	1    950  2050
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:C_Small C2
-U 1 1 601E34E0
-P 1150 2050
-F 0 "C2" H 1000 2150 50  0000 L CNN
-F 1 "0.01uF" H 1200 1950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder" H 1150 2050 50  0001 C CNN
-F 3 "~" H 1150 2050 50  0001 C CNN
-	1    1150 2050
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	950  1900 950  1950
-Wire Wire Line
-	1150 1950 1150 1900
-Wire Wire Line
-	1150 1900 950  1900
-Wire Wire Line
-	1150 2150 1150 2200
-Wire Wire Line
-	1150 2200 950  2200
-Wire Wire Line
-	950  2150 950  2200
-Wire Wire Line
-	950  3300 950  2950
-Wire Wire Line
-	950  2950 1750 2950
-Connection ~ 950  2950
-Connection ~ 950  2200
 Text Label 8650 2200 2    50   ~ 0
 SCK
 Text Label 8650 2350 2    50   ~ 0
@@ -239,16 +155,6 @@ Text Label 9600 2350 0    50   ~ 0
 SHARP_CS_D5
 Text Label 9600 2050 0    50   ~ 0
 SHARP_DISP_D6
-Text Label 2800 2950 0    50   ~ 0
-GPS_PPS_D12
-Text Label 1750 3250 2    50   ~ 0
-GPS_RX
-Text Label 1600 2800 2    50   ~ 0
-GPS_FIX_D11
-Text Label 1750 3100 2    50   ~ 0
-GPS_TX
-Connection ~ 1150 1900
-Connection ~ 1150 2200
 Text Label 6000 4550 0    50   ~ 0
 CPS_CS_D10
 Text Label 6000 4700 0    50   ~ 0
@@ -351,49 +257,8 @@ F 3 "~" H 7300 1850 50  0001 C CNN
 	1    7300 1850
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	1150 1900 1750 1900
-Connection ~ 950  1900
 Text Notes 10600 4200 2    50   ~ 0
 BUTTONS - ALL OF THEM HAVE INTERNAL PULLUP
-Wire Wire Line
-	1750 2500 1650 2500
-$Comp
-L Device:LED D1
-U 1 1 60235515
-P 1500 2500
-F 0 "D1" H 1500 2400 50  0000 C CNN
-F 1 "FIX_BLU" H 1500 2600 50  0000 C CNN
-F 2 "LED_SMD:LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 1500 2500 50  0001 C CNN
-F 3 "~" H 1500 2500 50  0001 C CNN
-	1    1500 2500
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	1350 2500 1300 2500
-$Comp
-L Device:R_US R1
-U 1 1 60234526
-P 1150 2500
-F 0 "R1" V 1250 2500 50  0000 C CNN
-F 1 "100" V 1050 2500 50  0000 C CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 1190 2490 50  0001 C CNN
-F 3 "~" H 1150 2500 50  0001 C CNN
-	1    1150 2500
-	0    1    1    0   
-$EndComp
-Wire Wire Line
-	950  2200 950  2500
-Wire Wire Line
-	1000 2500 950  2500
-Connection ~ 950  2500
-Wire Wire Line
-	950  2500 950  2950
-Wire Wire Line
-	1650 2800 1650 2500
-Connection ~ 1650 2500
-Wire Wire Line
-	1650 2800 1600 2800
 Text Label 9500 5800 2    50   ~ 0
 BTN_A1
 Text Label 9500 5400 2    50   ~ 0
@@ -712,16 +577,13 @@ Text Label 2850 4550 2    50   ~ 0
 RST
 Text Label 1350 4550 2    50   ~ 0
 RST
-NoConn ~ 1750 2050
 Text Label 6600 2850 0    50   ~ 0
 CPS_CS_D10
 NoConn ~ 6600 3250
 NoConn ~ 6600 3350
-Text Notes 900  3800 0    50   ~ 0
-not hooking GPS reset to the rest\nto allow resetting MCU while\nkeeping GPS fix
 Text Notes 6950 3350 0    50   ~ 0
 P2_8 (D9) IS BATTERY MONITOR, DO NOT USE
-Text Notes 1100 1550 0    50   ~ 0
+Text Notes 1700 1500 0    50   ~ 0
 25mA
 Text Notes 7050 1450 0    50   ~ 0
 Estimate 50mA
@@ -729,4 +591,28 @@ Text Notes 8200 1750 0    50   ~ 0
 53uA
 Text Notes 4100 4400 0    50   ~ 0
 100uA
+$Comp
+L st_pat:GPS_Breakout_746 U1
+U 1 1 60E458B0
+P 2250 1750
+F 0 "U1" H 2250 1865 50  0000 C CNN
+F 1 "GPS_Breakout_746" H 2250 1774 50  0000 C CNN
+F 2 "st_pat:GPS_Breakout_746" H 2250 1750 50  0001 C CNN
+F 3 "" H 2250 1750 50  0001 C CNN
+	1    2250 1750
+	1    0    0    -1  
+$EndComp
+Text Label 1900 1900 2    50   ~ 0
+GPS_PPS_D12
+Text Label 2600 2350 0    50   ~ 0
+GPS_FIX_D11
+Text Label 1900 2350 2    50   ~ 0
+GPS_TX
+Text Label 1900 2200 2    50   ~ 0
+GPS_RX
+Wire Wire Line
+	2750 1900 2600 1900
+NoConn ~ 1900 2050
+NoConn ~ 2600 2200
+NoConn ~ 2600 2050
 $EndSCHEMATC
