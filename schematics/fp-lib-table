@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name st_pat)(type KiCad)(uri ${KIPRJMOD}/st_pat.pretty)(options "")(descr ""))
+  (lib (name FEATHER_M0_BASIC_PROTO)(type KiCad)(uri ${KIPRJMOD}/FEATHER_M0_BASIC_PROTO.pretty)(options "")(descr ""))
+)
