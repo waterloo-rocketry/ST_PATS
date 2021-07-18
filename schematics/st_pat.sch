@@ -573,10 +573,6 @@ MOSI
 Text Label 2850 5150 2    50   ~ 0
 MISO
 NoConn ~ 6600 2950
-Text Label 2850 4550 2    50   ~ 0
-RST
-Text Label 1350 4550 2    50   ~ 0
-RST
 Text Label 6600 2850 0    50   ~ 0
 CPS_CS_D10
 NoConn ~ 6600 3250
@@ -615,4 +611,6 @@ Wire Wire Line
 NoConn ~ 1900 2050
 NoConn ~ 2600 2200
 NoConn ~ 2600 2050
+NoConn ~ 2850 4550
+NoConn ~ 1350 4550
 $EndSCHEMATC
