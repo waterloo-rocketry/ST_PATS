@@ -1,5 +1,6 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_LIS2MDL.h>
+#include <FlashStorage.h>
 
 #include "config.h"
 #include "display.h"
@@ -8,12 +9,18 @@
 
 static Adafruit_LIS2MDL imu;
 
+// for compass calibration
+struct Calibration {
+   float minx, miny, minz, maxx, maxy, maxz;
+};
+
 static bool calibrating = false;
-static float minx, miny, minz, maxx, maxy, maxz;
+static Calibration cal;
+FlashStorage(calStorage, Calibration);
 
 void compass_init() {
+   compass_calibrate_load();
    imu.begin_SPI(IMU_SS, SCK, MISO, MOSI);
-   compass_calibrate_start();
 }
 
 // return radians
@@ -21,20 +28,25 @@ double compass_heading() {
    sensors_event_t event;
    imu.getEvent(&event);
 
-   float x = fmap(event.magnetic.x, minx, maxx, -1, 1);
-   float y = fmap(event.magnetic.y, miny, maxy, -1, 1);
+   float x = fmap(event.magnetic.x, cal.minx, cal.maxx, -1, 1);
+   float y = fmap(event.magnetic.y, cal.miny, cal.maxy, -1, 1);
 
    return atan2(y, x);
 }
 
+void compass_calibrate_load() {
+   calStorage.read(&cal);
+}
+
 void compass_calibrate_start() {
-   minx = miny = minz = INFINITY;
-   maxx = maxy = maxz = -INFINITY;
+   cal.minx = cal.miny = cal.minz = INFINITY;
+   cal.maxx = cal.maxy = cal.maxz = -INFINITY;
    calibrating = true;
 }
 
 void compass_calibrate_stop() {
    calibrating = false;
+   calStorage.write(cal);
 }
 
 void compass_calibrate_toggle() {
@@ -52,29 +64,29 @@ void compass_do_calibrate() {
    float y =  event.magnetic.y;
    float z = -event.magnetic.y; // board is upside down
 
-   if(x < minx) minx = x;
-   if(x > maxx) maxx = x;
-   if(y < miny) miny = y;
-   if(y > maxy) maxy = y;
-   if(z < minz) minz = z;
-   if(z > maxz) maxz = z;
+   if(x < cal.minx) cal.minx = x;
+   if(x > cal.maxx) cal.maxx = x;
+   if(y < cal.miny) cal.miny = y;
+   if(y > cal.maxy) cal.maxy = y;
+   if(z < cal.minz) cal.minz = z;
+   if(z > cal.maxz) cal.maxz = z;
 
    display.println("Calibrating");
 
    display.print("x: ");
-   display.print(minx);
+   display.print(cal.minx);
    display.print(", ");
-   display.println(maxx);
+   display.println(cal.maxx);
 
    display.print("y: ");
-   display.print(miny);
+   display.print(cal.miny);
    display.print(", ");
-   display.println(maxy);
+   display.println(cal.maxy);
 
    display.print("z: ");
-   display.print(minz);
+   display.print(cal.minz);
    display.print(", ");
-   display.println(maxz);
+   display.println(cal.maxz);
 }
 
 void compass_update() {
