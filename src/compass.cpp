@@ -85,6 +85,21 @@ void compass_update() {
       return;
    }
 
+   float heading = compass_heading();
+
    display.print("heading: ");
-   display.print(compass_heading() / TWO_PI * 360.0);
+   display.print(heading / TWO_PI * 360.0);
+
+   static const int fontScale = 2;
+   static const float radius = 45;
+   static const char cardinals[] = { 'N', 'E', 'S', 'W' };
+   float centerX = 60, centerY = 60;
+
+   for(int cardinal = 0; cardinal < 4; cardinal++) {
+      float x = centerX + radius * cos(cardinal * TWO_PI / 4 - heading) - fontScale * 5 / 2;
+      float y = centerY + radius * sin(cardinal * TWO_PI / 4 - heading) - fontScale * 8 / 2;
+      display.drawChar(x, y, cardinals[cardinal], 0, 1, fontScale);
+   }
+
+   display.drawCircle(centerX, centerY, radius + fontScale * 10 / 2, 0);
 }
