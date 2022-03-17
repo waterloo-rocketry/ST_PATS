@@ -5,24 +5,39 @@
 #include "compass.h"
 #include "gps.h"
 
-Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, 400, 240);
+Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 
-void setup(void) {
-   pinMode(A1, INPUT_PULLUP);
-   pinMode(A2, INPUT_PULLUP);
-   pinMode(A3, INPUT_PULLUP);
+void buttonHandler() {
+   // TODO
+}
+
+void setup() {
+   // enable float in printf
+   asm(".global _printf_float");
+
+   // buttons
+   static const int buttons[] = { A1, A2, A3 };
+   for(int button : buttons) {
+      pinMode(button, INPUT_PULLUP);
+      attachInterrupt(digitalPinToInterrupt(button), buttonHandler, CHANGE);
+   }
+
+   // led output
    pinMode(13, OUTPUT);
 
+   // display
    display.begin();
+   display.cp437(true);
    display.setTextSize(2);
    display.setTextColor(0);
    display.setRotation(2);
 
+   // other
    compass_init();
    gps_init();
 }
 
-void loop(void) {
+void loop() {
    static bool a1_pressed = false;
    if(!digitalRead(A1)) {
       if(!a1_pressed) {

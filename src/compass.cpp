@@ -71,27 +71,26 @@ void compass_do_calibrate() {
    if(z < cal.minz) cal.minz = z;
    if(z > cal.maxz) cal.maxz = z;
 
+   display.setCursor(0, 0);
    display.println("Calibrating");
 
-   display.print("x: ");
-   display.print(cal.minx);
-   display.print(", ");
+   display.print("min x ");
+   display.println(cal.minx);
+   display.print("max x ");
    display.println(cal.maxx);
 
-   display.print("y: ");
-   display.print(cal.miny);
-   display.print(", ");
+   display.print("min y ");
+   display.println(cal.miny);
+   display.print("max y ");
    display.println(cal.maxy);
 
-   display.print("z: ");
-   display.print(cal.minz);
-   display.print(", ");
+   display.print("min z ");
+   display.println(cal.minz);
+   display.print("max z ");
    display.println(cal.maxz);
 }
 
 void compass_update() {
-   display.setCursor(0, 0);
-
    if(calibrating) {
       compass_do_calibrate();
       return;
@@ -99,19 +98,22 @@ void compass_update() {
 
    float heading = compass_heading();
 
-   display.print("heading: ");
-   display.print(heading / TWO_PI * 360.0);
-
    static const int fontScale = 2;
-   static const float radius = 45;
+   static const float radius = DISPLAY_H * 3 / 8;
+   static float centerX = radius + 10, centerY = radius + 10;
    static const char cardinals[] = { 'N', 'E', 'S', 'W' };
-   float centerX = 60, centerY = 60;
 
    for(int cardinal = 0; cardinal < 4; cardinal++) {
-      float x = centerX + radius * cos(cardinal * TWO_PI / 4 - heading) - fontScale * 5 / 2;
-      float y = centerY + radius * sin(cardinal * TWO_PI / 4 - heading) - fontScale * 8 / 2;
+      float x = centerX + (radius - fontScale * 5) * cos(cardinal * TWO_PI / 4 - heading) - fontScale * 5 / 2;
+      float y = centerY + (radius - fontScale * 5) * sin(cardinal * TWO_PI / 4 - heading) - fontScale * 8 / 2;
       display.drawChar(x, y, cardinals[cardinal], 0, 1, fontScale);
    }
 
-   display.drawCircle(centerX, centerY, radius + fontScale * 10 / 2, 0);
+   for(int i = 0; i < fontScale; i++) {
+      display.drawCircle(centerX, centerY, radius + i, 0);
+   }
+
+   display.setCursor(60, DISPLAY_H - 30);
+   display.print(fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
+   display.print("\xF8");
 }
