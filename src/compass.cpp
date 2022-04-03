@@ -2,12 +2,25 @@
 #include <Adafruit_LIS2MDL.h>
 #include <FlashStorage.h>
 
-#include "config.h"
 #include "display.h"
 #include "compass.h"
+#include "coordinate.h"
+#include "gps.h"
 #include "util.h"
 
+static constexpr int IMU_SS = 10;
 static Adafruit_LIS2MDL imu;
+
+// used to approximate offset between true north and magnetic north
+// https://en.wikipedia.org/wiki/Geomagnetic_pole
+static Coordinate mag_north{
+   .lat = 80.7 / 360 * TWO_PI,
+   .lon = -72.7 / 360 * TWO_PI,
+};
+static Coordinate true_north{
+   .lat = PI / 4, // 90 deg lat = north pole
+   .lon = 0,
+};
 
 // for compass calibration
 struct Calibration {
@@ -24,7 +37,7 @@ void compass_init() {
 }
 
 // return radians
-double compass_heading() {
+float compass_heading() {
    sensors_event_t event;
    imu.getEvent(&event);
 
@@ -96,7 +109,9 @@ void compass_update() {
       return;
    }
 
-   float heading = compass_heading();
+   const Coordinate &here = gps_coord();
+   float offset = coord_angle_between(here, true_north, mag_north); // approximation
+   float heading = compass_heading() + offset;
 
    static const int fontScale = 2;
    static const float radius = DISPLAY_H * 3 / 8;

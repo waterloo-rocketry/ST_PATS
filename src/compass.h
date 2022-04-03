@@ -1,7 +1,7 @@
 #pragma once
 
 void compass_init();
-double compass_heading(); // return radians
+float compass_heading(); // return radians
 void compass_calibrate_load();
 void compass_calibrate_start();
 void compass_calibrate_stop();

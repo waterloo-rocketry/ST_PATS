@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <Adafruit_SharpMem.h>
 
-#include "config.h"
 #include "compass.h"
 #include "gps.h"
+#include "display.h"
+
+static constexpr int SHARP_SS = 5;
 
 Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 

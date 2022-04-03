@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <Adafruit_GPS.h>
 
-#include "config.h"
 #include "display.h"
+#include "coordinate.h"
+
+#define GPSSerial Serial1
 
 static Adafruit_GPS gps(&GPSSerial);
+static Coordinate coord;
 
 static void parsedeg(int32_t degFixed, int &deg, int &min, int &sec, int &msec) {
    deg = degFixed / 10000000;
@@ -72,7 +75,13 @@ void gps_update() {
 
       sprintf(buff, "ALT % 4.2fM", gps.altitude);
       display.print(buff);
+
+      coord_from_deg(coord, gps.latitudeDegrees, gps.longitudeDegrees);
    } else {
       display.print("NO FIX");
    }
+}
+
+const Coordinate &gps_coord() {
+   return coord;
 }
