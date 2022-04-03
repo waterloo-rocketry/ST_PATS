@@ -2,12 +2,10 @@
 #include <Adafruit_GPS.h>
 
 #include "display.h"
-#include "coordinate.h"
 
 #define GPSSerial Serial1
 
 static Adafruit_GPS gps(&GPSSerial);
-static Coordinate coord;
 
 static void parsedeg(int32_t degFixed, int &deg, int &min, int &sec, int &msec) {
    deg = degFixed / 10000000;
@@ -27,6 +25,7 @@ void gps_init() {
 }
 
 void gps_update() {
+   // read GPS
    while(gps.available()) {
       gps.read();
       if(gps.newNMEAreceived()) {
@@ -34,15 +33,14 @@ void gps_update() {
       }
    }
 
-   static const int lineHeight = 18;
+   // display
    int x = DISPLAY_W - 200;
    int y = 10;
 
    display.setCursor(x, y);
 
-   // display time
    display.print("Local GPS");
-   y += lineHeight;
+   y += LINE_H;
    display.setCursor(x, y);
 
    if(gps.hour < 10) display.print('0');
@@ -52,36 +50,39 @@ void gps_update() {
    if(gps.seconds < 10) display.print('0');
    display.print(gps.seconds, DEC);
 
-   y += lineHeight;
+   y += LINE_H;
    display.setCursor(x, y);
 
    if(gps.fix) {
-      char buff[24];
+      char buff[20];
       int deg, min, sec, msec;
 
       parsedeg(fabs(gps.latitude_fixed), deg, min, sec, msec);
-      sprintf(buff, "LAT% 3d\xF8%02d'%02d.%03d\"", deg, min, sec, msec);
+      sprintf(buff, "LAT% 3d\xF8%02d'%02d.%03d\"%c", deg, min, sec, msec, gps.lat);
       display.print(buff);
 
-      y += lineHeight;
+      y += LINE_H;
       display.setCursor(x, y);
 
       parsedeg(fabs(gps.longitude_fixed), deg, min, sec, msec);
-      sprintf(buff, "LON% 3d\xF8%02d'%02d.%03d\"", deg, min, sec, msec);
+      sprintf(buff, "LON% 3d\xF8%02d'%02d.%03d\"%c", deg, min, sec, msec, gps.lon);
       display.print(buff);
 
-      y += lineHeight;
+      y += LINE_H;
       display.setCursor(x, y);
 
       sprintf(buff, "ALT % 4.2fM", gps.altitude);
       display.print(buff);
-
-      coord_from_deg(coord, gps.latitudeDegrees, gps.longitudeDegrees);
    } else {
       display.print("NO FIX");
    }
 }
 
-const Coordinate &gps_coord() {
-   return coord;
+void gps_coord(float &lat, float &lon) {
+   lat = gps.latitude / 360 * TWO_PI;
+   lon = gps.longitude / 360 * TWO_PI;
+}
+
+float gps_magvariation() {
+   return gps.magvariation / 360 * TWO_PI;
 }

@@ -4,23 +4,12 @@
 
 #include "display.h"
 #include "compass.h"
-#include "coordinate.h"
 #include "gps.h"
+#include "telemetry.h"
 #include "util.h"
 
 static constexpr int IMU_SS = 10;
 static Adafruit_LIS2MDL imu;
-
-// used to approximate offset between true north and magnetic north
-// https://en.wikipedia.org/wiki/Geomagnetic_pole
-static Coordinate mag_north{
-   .lat = 80.7 / 360 * TWO_PI,
-   .lon = -72.7 / 360 * TWO_PI,
-};
-static Coordinate true_north{
-   .lat = PI / 4, // 90 deg lat = north pole
-   .lon = 0,
-};
 
 // for compass calibration
 struct Calibration {
@@ -29,22 +18,11 @@ struct Calibration {
 
 static bool calibrating = false;
 static Calibration cal;
-FlashStorage(calStorage, Calibration);
+FlashStorage(calStorage, Calibration); // macro
 
 void compass_init() {
    compass_calibrate_load();
    imu.begin_SPI(IMU_SS, SCK, MISO, MOSI);
-}
-
-// return radians
-float compass_heading() {
-   sensors_event_t event;
-   imu.getEvent(&event);
-
-   float x = fmap(event.magnetic.x, cal.minx, cal.maxx, -1, 1);
-   float y = fmap(event.magnetic.y, cal.miny, cal.maxy, -1, 1);
-
-   return atan2(y, x);
 }
 
 void compass_calibrate_load() {
@@ -109,26 +87,62 @@ void compass_update() {
       return;
    }
 
-   const Coordinate &here = gps_coord();
-   float offset = coord_angle_between(here, true_north, mag_north); // approximation
-   float heading = compass_heading() + offset;
+   // calculate heading from sensors and gps
+   sensors_event_t event;
+   imu.getEvent(&event);
 
-   static const int fontScale = 2;
-   static const float radius = DISPLAY_H * 3 / 8;
-   static float centerX = radius + 10, centerY = radius + 10;
-   static const char cardinals[] = { 'N', 'E', 'S', 'W' };
+   float x = fmap(event.magnetic.x, cal.minx, cal.maxx, -1, 1);
+   float y = fmap(event.magnetic.y, cal.miny, cal.maxy, -1, 1);
+   float heading = atan2(y, x) + gps_magvariation();
 
+   // calculate target direction
+   float olat, olon, tlat, tlon; // origin, target
+   gps_coord(olat, olon);
+   tele_coord(tlat, tlon);
+   float targetHeading = heading_from(olat, olon, tlat, tlon);
+
+   // display
+   static constexpr int fontScale = 2;
+   static constexpr float radius = DISPLAY_H * 3 / 8;
+   static constexpr float centerX = radius + 10, centerY = radius + 10;
+   static const char cardinals[] = {'E', 'N', 'W', 'S'};
+   static const float arrow[3][2] = { // polar coordinate th, r
+      {TWO_PI / 4, radius * 0.8},
+      {TWO_PI * 4 / 5, radius * 0.5},
+      {TWO_PI * 6 / 5, radius * 0.5},
+   };
+
+   // draw cardinal directions
    for(int cardinal = 0; cardinal < 4; cardinal++) {
+      // TODO figure out which direction is which
       float x = centerX + (radius - fontScale * 5) * cos(cardinal * TWO_PI / 4 - heading) - fontScale * 5 / 2;
-      float y = centerY + (radius - fontScale * 5) * sin(cardinal * TWO_PI / 4 - heading) - fontScale * 8 / 2;
+      float y = centerY - (radius - fontScale * 5) * sin(cardinal * TWO_PI / 4 - heading) - fontScale * 8 / 2;
       display.drawChar(x, y, cardinals[cardinal], 0, 1, fontScale);
    }
 
+   // draw arrow
+   display.fillTriangle(
+      centerX + arrow[0][1] * cos(arrow[0][0] - targetHeading),
+      centerY + arrow[0][1] * sin(arrow[0][0] - targetHeading),
+      centerX + arrow[1][1] * cos(arrow[1][0] - targetHeading),
+      centerY + arrow[1][1] * sin(arrow[1][0] - targetHeading),
+      centerX + arrow[2][1] * cos(arrow[2][0] - targetHeading),
+      centerY + arrow[2][1] * sin(arrow[2][0] - targetHeading),
+      0
+   );
+
+   // draw outer circle
    for(int i = 0; i < fontScale; i++) {
       display.drawCircle(centerX, centerY, radius + i, 0);
    }
 
+   // draw current heading
    display.setCursor(60, DISPLAY_H - 30);
    display.print(fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
+   display.print("\xF8");
+
+   // draw target heading
+   display.setCursor(60, DISPLAY_H - 30 + LINE_H);
+   display.print(fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
    display.print("\xF8");
 }

@@ -3,4 +3,5 @@ struct Coordinate;
 
 void gps_init();
 void gps_update();
-const Coordinate &gps_coord();
+void gps_coord(float &lat, float &lon); //radians
+float gps_magvariation(); // radians

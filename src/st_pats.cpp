@@ -4,8 +4,10 @@
 #include "compass.h"
 #include "gps.h"
 #include "display.h"
+#include "telemetry.h"
 
 static constexpr int SHARP_SS = 5;
+static const int BUTTONS[] = { A1, A2, A3 };
 
 Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 
@@ -17,9 +19,11 @@ void setup() {
    // enable float in printf
    asm(".global _printf_float");
 
+   // serial
+   Serial.begin(9600);
+
    // buttons
-   static const int buttons[] = { A1, A2, A3 };
-   for(int button : buttons) {
+   for(int button : BUTTONS) {
       pinMode(button, INPUT_PULLUP);
       attachInterrupt(digitalPinToInterrupt(button), buttonHandler, CHANGE);
    }
@@ -35,8 +39,9 @@ void setup() {
    display.setRotation(2);
 
    // other
-   compass_init();
    gps_init();
+   tele_init();
+   compass_init();
 }
 
 void loop() {
@@ -52,8 +57,9 @@ void loop() {
 
    display.clearDisplayBuffer();
 
-   compass_update();
    gps_update();
+   compass_update();
+   tele_update();
 
    display.refresh();
 }
