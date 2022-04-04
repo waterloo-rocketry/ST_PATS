@@ -103,13 +103,24 @@ void compass_update() {
 
    // display
    static constexpr int fontScale = 2;
-   static constexpr float radius = DISPLAY_H * 0.3;
+   static constexpr float radius = 72;
    static constexpr float centerX = radius + 10, centerY = radius + 10;
+
+   // letters to show around the compass
    static const char cardinals[] = {'N', 'W', 'S', 'E'};
-   static const float arrow[3][2] = { // polar coordinate th, r
-      {TWO_PI / 4, radius * 0.7},
-      {TWO_PI * 11 / 16, radius * 0.6},
-      {TWO_PI * 13 / 16, radius * 0.6},
+
+   // triangles that make up the arrow, in polar coordinate th, r
+   static const float arrow[][3][2] = {
+      {
+         {TWO_PI / 4, radius * 0.7},
+         {TWO_PI * 11 / 16, radius * 0.6},
+         {TWO_PI * 3 / 4, radius * 0.2},
+      },
+      {
+         {TWO_PI / 4, radius * 0.7},
+         {TWO_PI * 13 / 16, radius * 0.6},
+         {TWO_PI * 3 / 4, radius * 0.2},
+      }
    };
 
    // draw cardinal directions
@@ -121,15 +132,17 @@ void compass_update() {
 
    // draw arrow
    if(gps_fixed()) {
-      display.fillTriangle(
-         centerX + arrow[0][1] * cos(arrow[0][0] + heading - targetHeading),
-         centerY - arrow[0][1] * sin(arrow[0][0] + heading - targetHeading),
-         centerX + arrow[1][1] * cos(arrow[1][0] + heading - targetHeading),
-         centerY - arrow[1][1] * sin(arrow[1][0] + heading - targetHeading),
-         centerX + arrow[2][1] * cos(arrow[2][0] + heading - targetHeading),
-         centerY - arrow[2][1] * sin(arrow[2][0] + heading - targetHeading),
-         0
-      );
+      for(size_t i = 0; i < sizeof(arrow) / sizeof(arrow[0]); i++) {
+         display.fillTriangle(
+            centerX + arrow[i][0][1] * cos(arrow[i][0][0] + heading - targetHeading),
+            centerY - arrow[i][0][1] * sin(arrow[i][0][0] + heading - targetHeading),
+            centerX + arrow[i][1][1] * cos(arrow[i][1][0] + heading - targetHeading),
+            centerY - arrow[i][1][1] * sin(arrow[i][1][0] + heading - targetHeading),
+            centerX + arrow[i][2][1] * cos(arrow[i][2][0] + heading - targetHeading),
+            centerY - arrow[i][2][1] * sin(arrow[i][2][0] + heading - targetHeading),
+            0
+         );
+      }
    }
 
    // draw outer circle
