@@ -121,15 +121,17 @@ void compass_update() {
    }
 
    // draw arrow
-   display.fillTriangle(
-      centerX + arrow[0][1] * cos(arrow[0][0] - targetHeading),
-      centerY + arrow[0][1] * sin(arrow[0][0] - targetHeading),
-      centerX + arrow[1][1] * cos(arrow[1][0] - targetHeading),
-      centerY + arrow[1][1] * sin(arrow[1][0] - targetHeading),
-      centerX + arrow[2][1] * cos(arrow[2][0] - targetHeading),
-      centerY + arrow[2][1] * sin(arrow[2][0] - targetHeading),
-      0
-   );
+   if(gps_fixed()) {
+      display.fillTriangle(
+         centerX + arrow[0][1] * cos(arrow[0][0] - targetHeading),
+         centerY + arrow[0][1] * sin(arrow[0][0] - targetHeading),
+         centerX + arrow[1][1] * cos(arrow[1][0] - targetHeading),
+         centerY + arrow[1][1] * sin(arrow[1][0] - targetHeading),
+         centerX + arrow[2][1] * cos(arrow[2][0] - targetHeading),
+         centerY + arrow[2][1] * sin(arrow[2][0] - targetHeading),
+         0
+      );
+   }
 
    // draw outer circle
    for(int i = 0; i < fontScale; i++) {

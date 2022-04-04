@@ -9,7 +9,7 @@ static constexpr int TELE_RX = 12;
 
 static Uart TeleSerial(&sercom1, TELE_RX, TELE_TX, SERCOM_RX_PAD_3, UART_TX_PAD_0);
 
-static TeleMode mode = TELE_RADIO;
+static TeleMode mode = TELE_MODE_RADIO;
 static float latDeg = 0;
 static float lonDeg = 0;
 static float alt = 0;
@@ -37,10 +37,10 @@ void tele_init() {
 void tele_update() {
    // get gps from telemetry
    switch(mode) {
-      case TELE_RADIO:
+      case TELE_MODE_RADIO:
          // TODO
          break;
-      case TELE_SERIAL:
+      case TELE_MODE_SERIAL:
          while(Serial.available()) {
             float num = Serial.parseFloat(SKIP_WHITESPACE);
             switch(Serial.read()) {
@@ -75,10 +75,10 @@ void tele_update() {
    // display time
    display.print("Telemetry GPS ");
    switch(mode) {
-      case TELE_RADIO:
+      case TELE_MODE_RADIO:
          display.print("(Radio)");
          break;
-      case TELE_SERIAL:
+      case TELE_MODE_SERIAL:
          display.print("(Serial)");
          break;
    }
@@ -91,24 +91,32 @@ void tele_update() {
    float sec;
 
    parsedeg(fabs(latDeg), deg, min, sec);
-   sprintf(buff, "LAT% 3d\xF8%02d'%06.3f\"%c", deg, min, sec, latDeg >= 0 ? 'N' : 'S');
+   snprintf(buff, sizeof(buff), "LAT% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, latDeg >= 0 ? 'N' : 'S');
    display.print(buff);
 
    y += LINE_H;
    display.setCursor(x, y);
 
    parsedeg(fabs(lonDeg), deg, min, sec);
-   sprintf(buff, "LON% 3d\xF8%02d'%06.3f\"%c", deg, min, sec, lonDeg >= 0 ? 'E' : 'W');
+   snprintf(buff, sizeof(buff), "LON% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, lonDeg >= 0 ? 'E' : 'W');
    display.print(buff);
 
    y += LINE_H;
    display.setCursor(x, y);
 
-   sprintf(buff, "ALT % 4.2fM", alt);
+   snprintf(buff, sizeof(buff), "ALT % 4.2fM", alt);
    display.print(buff);
 }
 
 void tele_coord(float &lat, float &lon) {
    lat = latDeg / 360 * TWO_PI;
    lon = lonDeg / 360 * TWO_PI;
+}
+
+void tele_set_mode(TeleMode _mode) {
+   mode = _mode;
+}
+
+TeleMode tele_get_mode() {
+   return mode;
 }

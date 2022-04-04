@@ -7,13 +7,38 @@
 #include "telemetry.h"
 
 static constexpr int SHARP_SS = 5;
-static const int BUTTONS[] = { A1, A2, A3 };
+static const int BUTTONS[] = {A1, A2, A3};
+static constexpr int LED = 13;
 
 Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 
-void buttonHandler() {
-   // TODO
+#define BEGIN_DEBOUNCE(btn) \
+do { \
+   static long pressed = 0; \
+   long now = millis(); \
+   if(!analogRead(btn)) { \
+      if(now - pressed > 20) { \
+         pressed = now; \
+      };
+#define END_DEBOUNCE }} while(0)
+
+static void a1Handler() {
+   BEGIN_DEBOUNCE(A1);
+   compass_calibrate_toggle();
+   END_DEBOUNCE;
 }
+
+static void a2Handler() {
+}
+
+static void a3Handler() {
+   BEGIN_DEBOUNCE(A3);
+   TeleMode mode = tele_get_mode();
+   tele_set_mode(mode == TELE_MODE_RADIO ? TELE_MODE_SERIAL : TELE_MODE_RADIO);
+   END_DEBOUNCE;
+}
+
+static void (*buttonHandlers[])() = {a1Handler, a2Handler, a3Handler};
 
 void setup() {
    // enable float in printf
@@ -23,13 +48,14 @@ void setup() {
    Serial.begin(9600);
 
    // buttons
+   int i = 0;
    for(int button : BUTTONS) {
       pinMode(button, INPUT_PULLUP);
-      attachInterrupt(digitalPinToInterrupt(button), buttonHandler, CHANGE);
+      attachInterrupt(digitalPinToInterrupt(button), buttonHandlers[i++], CHANGE);
    }
 
    // led output
-   pinMode(13, OUTPUT);
+   pinMode(LED, OUTPUT);
 
    // display
    display.begin();
@@ -45,16 +71,6 @@ void setup() {
 }
 
 void loop() {
-   static bool a1_pressed = false;
-   if(!digitalRead(A1)) {
-      if(!a1_pressed) {
-         compass_calibrate_toggle();
-      }
-      a1_pressed = true;
-   } else {
-      a1_pressed = false;
-   }
-
    display.clearDisplayBuffer();
 
    gps_update();
