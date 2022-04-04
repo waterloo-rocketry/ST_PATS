@@ -7,14 +7,12 @@
 
 static Adafruit_GPS gps(&GPSSerial);
 
-static void parsedeg(int32_t degFixed, int &deg, int &min, int &sec, int &msec) {
+static void parsedeg(int32_t degFixed, int &deg, int &min, float &sec) {
    deg = degFixed / 10000000;
-   degFixed %= 10000000;
-   min = degFixed * 60 / 10000000;
-   degFixed = degFixed * 60 % 10000000;
-   sec = degFixed * 60 / 10000000;
-   degFixed = degFixed * 60 % 10000000;
-   msec = degFixed / 10000;
+   degFixed = degFixed % 10000000 * 60;
+   min = degFixed / 10000000;
+   degFixed = degFixed % 10000000 * 60;
+   sec = degFixed / 10000000.0;
 }
 
 void gps_init() {
@@ -55,17 +53,18 @@ void gps_update() {
 
    if(gps.fix) {
       char buff[20];
-      int deg, min, sec, msec;
+      int deg, min;
+      float sec;
 
-      parsedeg(fabs(gps.latitude_fixed), deg, min, sec, msec);
-      snprintf(buff, sizeof(buff), "LAT% 3d\xF8%02d'%02d.%03d\"%c", deg, min, sec, msec, gps.lat);
+      parsedeg(fabs(gps.latitude_fixed), deg, min, sec);
+      snprintf(buff, sizeof(buff), "LAT% 3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lat);
       display.print(buff);
 
       y += LINE_H;
       display.setCursor(x, y);
 
-      parsedeg(fabs(gps.longitude_fixed), deg, min, sec, msec);
-      snprintf(buff, sizeof(buff), "LON% 3d\xF8%02d'%02d.%03d\"%c", deg, min, sec, msec, gps.lon);
+      parsedeg(fabs(gps.longitude_fixed), deg, min, sec);
+      snprintf(buff, sizeof(buff), "LON% 3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lon);
       display.print(buff);
 
       y += LINE_H;
