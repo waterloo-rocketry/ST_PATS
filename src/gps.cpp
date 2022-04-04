@@ -34,12 +34,12 @@ void gps_update() {
    }
 
    // display
-   int x = DISPLAY_W - 200;
+   int x = DISPLAY_W - 220;
    int y = 10;
 
    display.setCursor(x, y);
 
-   display.print("Local GPS");
+   display.print("Local");
    y += LINE_H;
    display.setCursor(x, y);
 

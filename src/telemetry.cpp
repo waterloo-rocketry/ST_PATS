@@ -67,19 +67,18 @@ void tele_update() {
    }
 
    // display
-   int x = DISPLAY_W - 200;
+   int x = DISPLAY_W - 220;
    int y = DISPLAY_H - 100;
 
    display.setCursor(x, y);
 
    // display time
-   display.print("Telemetry GPS ");
    switch(mode) {
       case TELE_MODE_RADIO:
-         display.print("(Radio)");
+         display.print("Teletry");
          break;
       case TELE_MODE_SERIAL:
-         display.print("(Serial)");
+         display.print("Serial");
          break;
    }
 

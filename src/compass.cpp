@@ -103,32 +103,31 @@ void compass_update() {
 
    // display
    static constexpr int fontScale = 2;
-   static constexpr float radius = DISPLAY_H * 3 / 8;
+   static constexpr float radius = DISPLAY_H * 0.3;
    static constexpr float centerX = radius + 10, centerY = radius + 10;
-   static const char cardinals[] = {'E', 'N', 'W', 'S'};
+   static const char cardinals[] = {'N', 'W', 'S', 'E'};
    static const float arrow[3][2] = { // polar coordinate th, r
-      {TWO_PI / 4, radius * 0.8},
-      {TWO_PI * 4 / 5, radius * 0.5},
-      {TWO_PI * 6 / 5, radius * 0.5},
+      {TWO_PI / 4, radius * 0.7},
+      {TWO_PI * 11 / 16, radius * 0.6},
+      {TWO_PI * 13 / 16, radius * 0.6},
    };
 
    // draw cardinal directions
    for(int cardinal = 0; cardinal < 4; cardinal++) {
-      // TODO figure out which direction is which
-      float x = centerX + (radius - fontScale * 5) * cos(cardinal * TWO_PI / 4 - heading) - fontScale * 5 / 2;
-      float y = centerY - (radius - fontScale * 5) * sin(cardinal * TWO_PI / 4 - heading) - fontScale * 8 / 2;
+      float x = centerX + (radius - fontScale * 5) * cos(cardinal * TWO_PI / 4 + heading) - fontScale * 5 / 2;
+      float y = centerY - (radius - fontScale * 5) * sin(cardinal * TWO_PI / 4 + heading) - fontScale * 8 / 2;
       display.drawChar(x, y, cardinals[cardinal], 0, 1, fontScale);
    }
 
    // draw arrow
    if(gps_fixed()) {
       display.fillTriangle(
-         centerX + arrow[0][1] * cos(arrow[0][0] - targetHeading),
-         centerY + arrow[0][1] * sin(arrow[0][0] - targetHeading),
-         centerX + arrow[1][1] * cos(arrow[1][0] - targetHeading),
-         centerY + arrow[1][1] * sin(arrow[1][0] - targetHeading),
-         centerX + arrow[2][1] * cos(arrow[2][0] - targetHeading),
-         centerY + arrow[2][1] * sin(arrow[2][0] - targetHeading),
+         centerX + arrow[0][1] * cos(arrow[0][0] + heading - targetHeading),
+         centerY - arrow[0][1] * sin(arrow[0][0] + heading - targetHeading),
+         centerX + arrow[1][1] * cos(arrow[1][0] + heading - targetHeading),
+         centerY - arrow[1][1] * sin(arrow[1][0] + heading - targetHeading),
+         centerX + arrow[2][1] * cos(arrow[2][0] + heading - targetHeading),
+         centerY - arrow[2][1] * sin(arrow[2][0] + heading - targetHeading),
          0
       );
    }
@@ -138,13 +137,28 @@ void compass_update() {
       display.drawCircle(centerX, centerY, radius + i, 0);
    }
 
-   // draw current heading
-   display.setCursor(60, DISPLAY_H - 30);
-   display.print(fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
-   display.print("\xF8");
+   /*
+   // debug circle
+   display.fillCircle(
+      centerX + fmap(event.magnetic.x, cal.minx, cal.maxx, -radius, radius),
+      centerY - fmap(event.magnetic.y, cal.miny, cal.maxy, -radius, radius),
+      5, 0
+   );
+   */
 
-   // draw target heading
-   display.setCursor(60, DISPLAY_H - 30 + LINE_H);
-   display.print(fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
-   display.print("\xF8");
+   // draw current heading
+   {
+      int x = 45, y = DISPLAY_H - 60;
+      char buff[8];
+      display.setCursor(x, y);
+      snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
+      display.print(buff);
+
+      // draw target heading
+      display.setCursor(x, y + LINE_H);
+      if(gps_fixed()) {
+         snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
+         display.print(buff);
+      }
+   }
 }

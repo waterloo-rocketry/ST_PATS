@@ -12,18 +12,18 @@ static constexpr int LED = 13;
 
 Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 
-#define BEGIN_DEBOUNCE(btn) \
+#define BEGIN_DEBOUNCE \
 do { \
    static long pressed = 0; \
    long now = millis(); \
-   if(!analogRead(btn)) { \
-      if(now - pressed > 20) { \
-         pressed = now; \
-      };
-#define END_DEBOUNCE }} while(0)
+   if(now - pressed > 200) {
+#define END_DEBOUNCE \
+   } \
+   pressed = now; \
+} while(0)
 
 static void a1Handler() {
-   BEGIN_DEBOUNCE(A1);
+   BEGIN_DEBOUNCE;
    compass_calibrate_toggle();
    END_DEBOUNCE;
 }
@@ -32,9 +32,8 @@ static void a2Handler() {
 }
 
 static void a3Handler() {
-   BEGIN_DEBOUNCE(A3);
-   TeleMode mode = tele_get_mode();
-   tele_set_mode(mode == TELE_MODE_RADIO ? TELE_MODE_SERIAL : TELE_MODE_RADIO);
+   BEGIN_DEBOUNCE;
+   tele_set_mode(tele_get_mode() == TELE_MODE_RADIO ? TELE_MODE_SERIAL : TELE_MODE_RADIO);
    END_DEBOUNCE;
 }
 
@@ -51,7 +50,7 @@ void setup() {
    int i = 0;
    for(int button : BUTTONS) {
       pinMode(button, INPUT_PULLUP);
-      attachInterrupt(digitalPinToInterrupt(button), buttonHandlers[i++], CHANGE);
+      attachInterrupt(digitalPinToInterrupt(button), buttonHandlers[i++], FALLING);
    }
 
    // led output
