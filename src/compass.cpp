@@ -93,7 +93,7 @@ void compass_update() {
 
    float x = fmap(event.magnetic.x, cal.minx, cal.maxx, -1, 1);
    float y = fmap(event.magnetic.y, cal.miny, cal.maxy, -1, 1);
-   float heading = atan2(y, x) + gps_magvariation();
+   float heading = atan2(-x, y) + gps_magvariation();
 
    // calculate target direction
    float olat, olon, tlat, tlon; // origin, target
@@ -107,26 +107,26 @@ void compass_update() {
    static constexpr float centerX = radius + 10, centerY = radius + 10;
 
    // letters to show around the compass
-   static const char cardinals[] = {'N', 'W', 'S', 'E'};
+   static const char cardinals[] = {'N', 'E', 'S', 'W'};
 
    // triangles that make up the arrow, in polar coordinate th, r
    static const float arrow[][3][2] = {
       {
-         {TWO_PI / 4, radius * 0.7},
-         {TWO_PI * 11 / 16, radius * 0.6},
-         {TWO_PI * 3 / 4, radius * 0.2},
+         {0, radius * 0.7},
+         {TWO_PI * 7 / 16, radius * 0.6},
+         {TWO_PI / 2, radius * 0.2},
       },
       {
-         {TWO_PI / 4, radius * 0.7},
-         {TWO_PI * 13 / 16, radius * 0.6},
-         {TWO_PI * 3 / 4, radius * 0.2},
+         {0, radius * 0.7},
+         {TWO_PI * 9 / 16, radius * 0.6},
+         {TWO_PI / 2, radius * 0.2},
       }
    };
 
    // draw cardinal directions
    for(int cardinal = 0; cardinal < 4; cardinal++) {
-      float x = centerX + (radius - fontScale * 5) * cos(cardinal * TWO_PI / 4 + heading) - fontScale * 5 / 2;
-      float y = centerY - (radius - fontScale * 5) * sin(cardinal * TWO_PI / 4 + heading) - fontScale * 8 / 2;
+      float x = centerX - (radius - fontScale * 5) * sin(heading - cardinal * TWO_PI / 4) - fontScale * 5 / 2;
+      float y = centerY - (radius - fontScale * 5) * cos(heading - cardinal * TWO_PI / 4) - fontScale * 8 / 2;
       display.drawChar(x, y, cardinals[cardinal], 0, 1, fontScale);
    }
 
@@ -134,12 +134,12 @@ void compass_update() {
    if(gps_fixed()) {
       for(size_t i = 0; i < sizeof(arrow) / sizeof(arrow[0]); i++) {
          display.fillTriangle(
-            centerX + arrow[i][0][1] * cos(arrow[i][0][0] + heading - targetHeading),
-            centerY - arrow[i][0][1] * sin(arrow[i][0][0] + heading - targetHeading),
-            centerX + arrow[i][1][1] * cos(arrow[i][1][0] + heading - targetHeading),
-            centerY - arrow[i][1][1] * sin(arrow[i][1][0] + heading - targetHeading),
-            centerX + arrow[i][2][1] * cos(arrow[i][2][0] + heading - targetHeading),
-            centerY - arrow[i][2][1] * sin(arrow[i][2][0] + heading - targetHeading),
+            centerX - arrow[i][0][1] * sin(arrow[i][0][0] + heading - targetHeading),
+            centerY - arrow[i][0][1] * cos(arrow[i][0][0] + heading - targetHeading),
+            centerX - arrow[i][1][1] * sin(arrow[i][1][0] + heading - targetHeading),
+            centerY - arrow[i][1][1] * cos(arrow[i][1][0] + heading - targetHeading),
+            centerX - arrow[i][2][1] * sin(arrow[i][2][0] + heading - targetHeading),
+            centerY - arrow[i][2][1] * cos(arrow[i][2][0] + heading - targetHeading),
             0
          );
       }
