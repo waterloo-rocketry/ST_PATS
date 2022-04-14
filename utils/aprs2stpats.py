@@ -5,7 +5,7 @@ import aprspy
 
 HOST = '127.0.0.1'
 PORT = 8001
-CALLSIGN = 'VE3MYO-0'
+CALLSIGN = 'VE3MYO-1'
 OUTPUT = sys.stdout
 DEBUG = False
 
@@ -14,17 +14,22 @@ def parse_aprs(data):
         return ''.join(chr(c >> 1) for c in data[:6]).strip() + '-' + str(data[6] >> 1 & 0xF)
 
     addr, info = data.strip(b'\r\n\xC0\x00').split(b'\x03\xF0')
-    src = parse_callsign(addr)
-    paths = [parse_callsign(addr[i:]) for i in range(7, len(addr), 7)]
+    des = parse_callsign(addr)
+    src = parse_callsign(addr[7:])
+    paths = [parse_callsign(addr[i:]) for i in range(14, len(addr), 7)]
     info = info.decode('utf-8', errors='ignore')
-    frame = f"{src}>{','.join(paths)}:{info}"
+    if len(paths) == 0:
+        paths = ['NOPATH']
+    frame = f"{src}>{des},{','.join(paths)}:{info}"
 
     if DEBUG:
         sys.stderr.write(frame + '\n')
 
     try:
         return aprspy.APRS.parse(frame)
-    except (aprspy.exceptions.ParseError, aprspy.exceptions.UnsupportedError):
+    except (aprspy.exceptions.ParseError, aprspy.exceptions.UnsupportedError) as e:
+        if DEBUG:
+            print(e)
         return None
 
 def parse_args():
@@ -47,7 +52,7 @@ def parse_args():
             elif arg == '--output' or arg == '-o':
                 file = sys.argv.pop(1)
                 if file != '-':
-                    OUTPUT = open(file, 'a')
+                    OUTPUT = open(file, 'w')
             elif arg == '--debug':
                 DEBUG = True
     except (IndexError, ValueError):
