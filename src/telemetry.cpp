@@ -6,8 +6,10 @@
 
 static constexpr int TELE_TX = 11;
 static constexpr int TELE_RX = 12;
+static constexpr int TELE_RTS = A5;
+static constexpr int TELE_CTS = A4;
 
-static Uart TeleSerial(&sercom1, TELE_RX, TELE_TX, SERCOM_RX_PAD_3, UART_TX_PAD_0);
+static Uart TeleSerial(&sercom1, TELE_RX, TELE_TX, SERCOM_RX_PAD_3, UART_TX_PAD_0, TELE_RTS, TELE_CTS);
 
 static TeleMode mode = TELE_MODE_RADIO;
 static float latDeg = 0;
