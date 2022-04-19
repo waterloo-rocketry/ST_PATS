@@ -53,6 +53,7 @@ void tele_save() {
 
 // get gps from telemetry
 void tele_update() {
+   bool received = false;
    switch(mode) {
       case TELE_MODE_RADIO:
          // TODO
@@ -79,11 +80,14 @@ void tele_update() {
                default:
                   break;
             }
+            received = true;
          }
          break;
    }
 
    // display
+   digitalWrite(LED, received ? HIGH : LOW);
+
    int x = DISPLAY_W - 220;
    int y = DISPLAY_H - 100;
 

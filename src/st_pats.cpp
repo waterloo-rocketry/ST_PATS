@@ -8,7 +8,6 @@
 
 static constexpr int SHARP_SS = 5;
 static const int BUTTONS[] = {A1, A2, A3};
-static constexpr int LED = 13;
 
 Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 
