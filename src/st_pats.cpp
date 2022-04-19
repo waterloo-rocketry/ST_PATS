@@ -22,15 +22,21 @@ do { \
    pressed = now; \
 } while(0)
 
+// button 1 toggles compass calibration
 static void a1Handler() {
    BEGIN_DEBOUNCE;
    compass_calibrate_toggle();
    END_DEBOUNCE;
 }
 
+// button 2 saves current telemetry coordinate to flash
 static void a2Handler() {
+   BEGIN_DEBOUNCE;
+   tele_save();
+   END_DEBOUNCE;
 }
 
+// button 3 toggles telemetry mode
 static void a3Handler() {
    BEGIN_DEBOUNCE;
    tele_set_mode(tele_get_mode() == TELE_MODE_RADIO ? TELE_MODE_SERIAL : TELE_MODE_RADIO);

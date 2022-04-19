@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <wiring_private.h> // pinPeripheral
+#include <FlashStorage.h>
 
 #include "telemetry.h"
 #include "display.h"
@@ -11,10 +12,13 @@ static constexpr int TELE_CTS = A4;
 
 static Uart TeleSerial(&sercom1, TELE_RX, TELE_TX, SERCOM_RX_PAD_3, UART_TX_PAD_0, TELE_RTS, TELE_CTS);
 
+struct Coordinate {
+   float lat, lon, alt; // degree, degree, meters
+};
+
 static TeleMode mode = TELE_MODE_RADIO;
-static float latDeg = 0;
-static float lonDeg = 0;
-static float alt = 0;
+static Coordinate coord;
+FlashStorage(coordStorage, Coordinate); // macro defining coordStorage
 
 static void parsedeg(float degFloat, int &deg, int &min, float &sec) {
    deg = (int) degFloat;
@@ -34,10 +38,21 @@ void tele_init() {
    TeleSerial.begin(57600);
 
    // USB Serial should be initialized in setup() already
+   
+   // Restore saved coordinate
+   tele_load();
 }
 
+void tele_load() {
+   coordStorage.read(&coord);
+}
+
+void tele_save() {
+   coordStorage.write(coord);
+}
+
+// get gps from telemetry
 void tele_update() {
-   // get gps from telemetry
    switch(mode) {
       case TELE_MODE_RADIO:
          // TODO
@@ -47,19 +62,19 @@ void tele_update() {
             float num = Serial.parseFloat(SKIP_WHITESPACE);
             switch(Serial.read()) {
                case 'N':
-                  latDeg = num;
+                  coord.lat = num;
                   break;
                case 'S':
-                  latDeg = -num;
+                  coord.lat = -num;
                   break;
                case 'E':
-                  lonDeg = num;
+                  coord.lon = num;
                   break;
                case 'W':
-                  lonDeg = -num;
+                  coord.lon = -num;
                   break;
                case 'M':
-                  alt = num;
+                  coord.alt = num;
                   break;
                default:
                   break;
@@ -91,27 +106,27 @@ void tele_update() {
    int deg, min;
    float sec;
 
-   parsedeg(fabs(latDeg), deg, min, sec);
-   snprintf(buff, sizeof(buff), "LAT% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, latDeg >= 0 ? 'N' : 'S');
+   parsedeg(fabs(coord.lat), deg, min, sec);
+   snprintf(buff, sizeof(buff), "LAT% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lat >= 0 ? 'N' : 'S');
    display.print(buff);
 
    y += LINE_H;
    display.setCursor(x, y);
 
-   parsedeg(fabs(lonDeg), deg, min, sec);
-   snprintf(buff, sizeof(buff), "LON% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, lonDeg >= 0 ? 'E' : 'W');
+   parsedeg(fabs(coord.lon), deg, min, sec);
+   snprintf(buff, sizeof(buff), "LON% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lon >= 0 ? 'E' : 'W');
    display.print(buff);
 
    y += LINE_H;
    display.setCursor(x, y);
 
-   snprintf(buff, sizeof(buff), "ALT % 4.2fM", alt);
+   snprintf(buff, sizeof(buff), "ALT % 4.2fM", coord.alt);
    display.print(buff);
 }
 
 void tele_coord(float &lat, float &lon) {
-   lat = latDeg / 360 * TWO_PI;
-   lon = lonDeg / 360 * TWO_PI;
+   lat = coord.lat / 360 * TWO_PI;
+   lon = coord.lon / 360 * TWO_PI;
 }
 
 void tele_set_mode(TeleMode _mode) {

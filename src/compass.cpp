@@ -18,7 +18,7 @@ struct Calibration {
 
 static bool calibrating = false;
 static Calibration cal;
-FlashStorage(calStorage, Calibration); // macro
+FlashStorage(calStorage, Calibration); // macro defining calStorage
 
 void compass_init() {
    compass_calibrate_load();
