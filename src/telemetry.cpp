@@ -4,6 +4,7 @@
 
 #include "telemetry.h"
 #include "display.h"
+#include "can_radio.h"
 
 static constexpr int TELE_TX = 11;
 static constexpr int TELE_RX = 12;
@@ -56,8 +57,32 @@ void tele_update() {
    bool received = false;
    switch(mode) {
       case TELE_MODE_RADIO:
-         // TODO
-         break;
+         {
+            char buff[GPS_MSG_LEN] = {GPS_MSG_HEADER};
+            if(!Serial.findUntil(buff, 1, nullptr, 0)) {
+               break;
+            }
+
+            if(Serial.readBytes(buff+1, GPS_MSG_LEN-1) < GPS_MSG_LEN-1) {
+               break;
+            }
+
+            uint8_t latd, latm, latdm, latdir, lond, lonm, londm, londir;
+            if(!expand_gps_message(&latd, &latm, &latdm, &latdir, &lond, &lonm, &londm, &londir, buff)) {
+               break;
+            }
+
+            coord.lat = latd + (float) latm / 60 + (float) latdm / 600000;
+            coord.lon = lond + (float) lonm / 60 + (float) londm / 600000;
+            coord.alt = 0;
+
+            if(latdir == 'S') coord.lat = -coord.lat;
+            if(londir == 'W') coord.lon = -coord.lon;
+
+            received = true;
+
+            break;
+         }
       case TELE_MODE_SERIAL:
          while(Serial.available()) {
             float num = Serial.parseFloat(SKIP_WHITESPACE);
