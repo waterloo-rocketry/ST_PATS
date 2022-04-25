@@ -35,58 +35,13 @@ uint8_t base64_to_binary(char base64)
     return 255;
 }
 
-bool create_gps_message(uint8_t latitude_deg,
-                        uint8_t latitude_min,
-                        uint8_t latitude_dmin,
-                        uint8_t latitude_dir,
-                        uint8_t longitude_deg,
-                        uint8_t longitude_min,
-                        uint8_t longitude_dmin,
-                        uint8_t longitude_dir,
-                        char *str)
-{
-    if (str == NULL ||
-        (latitude_dir != 'N' && latitude_dir != 'S') ||
-        (longitude_dir != 'E' && longitude_dir != 'W')) {
-        return false;
-    }
-
-    str[0] = GPS_MSG_HEADER;
-
-    str[1] = binary_to_base64((latitude_deg >> 2) & 0x3f);
-    str[2] = binary_to_base64(((latitude_deg << 4) & 0x30) |
-                              ((latitude_min >> 4) & 0xf));
-
-    str[3] = binary_to_base64(((latitude_min << 2) & 0x3c) |
-                              ((latitude_dmin >> 6) & 0x3));
-
-    str[4] = binary_to_base64(latitude_dmin & 0x3f);
-    str[5] = binary_to_base64((longitude_deg >> 2) & 0x3f);
-    str[6] = binary_to_base64(((longitude_deg << 4) & 0x30) |
-                              ((longitude_min >> 4) & 0xf));
-
-    str[7] = binary_to_base64(((longitude_min << 2) & 0x3c) |
-                              ((longitude_dmin >> 6) & 0x3));
-
-    str[8] = binary_to_base64(longitude_dmin & 0x3f);
-    str[9] = binary_to_base64((latitude_dir == 'N' ? 0x20 : 0) |
-                              (longitude_dir == 'E' ? 0x10 : 0));
-
-    // calculate checksum
-    str[GPS_MSG_LEN - 1] = '\0';
-    char cs = checksum(str);
-    str[GPS_MSG_LEN - 1] = cs;
-
-    return true;
-}
-
 bool expand_gps_message(uint8_t *latitude_deg,
                         uint8_t *latitude_min,
-                        uint8_t *latitude_dmin,
+                        uint16_t *latitude_dmin,
                         uint8_t *latitude_dir,
                         uint8_t *longitude_deg,
                         uint8_t *longitude_min,
-                        uint8_t *longitude_dmin,
+                        uint16_t *longitude_dmin,
                         uint8_t *longitude_dir,
                         char *str)
 {
@@ -111,18 +66,28 @@ bool expand_gps_message(uint8_t *latitude_deg,
     *latitude_dmin  = (base64_to_binary(str[3]) << 6) & 0xc0;
     *latitude_dmin |= (base64_to_binary(str[4]))      & 0x3f;
 
-    *longitude_deg   = (base64_to_binary(str[5]) << 2) & 0xfc;
-    *longitude_deg  |= (base64_to_binary(str[6]) >> 4) & 0x3;
+    *latitude_dmin <<= 8;
 
-    *longitude_min   = (base64_to_binary(str[6]) << 4) & 0xf0;
-    *longitude_min  |= (base64_to_binary(str[7]) >> 2) & 0xf;
+    *latitude_dmin  |= (base64_to_binary(str[5]) << 2) & 0xfc;
+    *latitude_dmin  |= (base64_to_binary(str[6]) >> 4) & 0x3;
 
-    *longitude_dmin  = (base64_to_binary(str[7]) << 6) & 0xc0;
-    *longitude_dmin |= (base64_to_binary(str[8]))      & 0x3f;
+    *longitude_deg   = (base64_to_binary(str[6]) << 4) & 0xf0;
+    *longitude_deg  |= (base64_to_binary(str[7]) >> 2) & 0xf;
+
+    *longitude_min   = (base64_to_binary(str[7]) << 6) & 0xc0;
+    *longitude_min  |= (base64_to_binary(str[8]))      & 0x3f;
+
+    *longitude_dmin |= (base64_to_binary(str[9]) << 2) & 0xfc;
+    *longitude_dmin |= (base64_to_binary(str[10]) >> 4) & 0x3;
+
+    *longitude_dmin <<= 8;
+
+    *longitude_dmin |= (base64_to_binary(str[10]) << 4) & 0xf0;
+    *longitude_dmin |= (base64_to_binary(str[11]) >> 2) & 0xf;
 
     // last char has lat_dir (1=='N', 0=='S') and lon_dir (1=='E', 0==W)
-    *latitude_dir  = (base64_to_binary(str[9]) & 0x20) ? 'N' : 'S';
-    *longitude_dir = (base64_to_binary(str[9]) & 0x10) ? 'E' : 'W';
+    *latitude_dir  = (base64_to_binary(str[11]) & 0x2) ? 'N' : 'S';
+    *longitude_dir = (base64_to_binary(str[11]) & 0x1) ? 'E' : 'W';
 
     return true;
 }

@@ -69,7 +69,8 @@ void tele_update() {
                break;
             }
 
-            uint8_t latd, latm, latdm, latdir, lond, lonm, londm, londir;
+            uint8_t latd, latm, latdir, lond, lonm, londir;
+            uint16_t latdm, londm;
             if(!expand_gps_message(&latd, &latm, &latdm, &latdir, &lond, &lonm, &londm, &londir, buff)) {
                break;
             }
