@@ -5,6 +5,7 @@
 #include "telemetry.h"
 #include "display.h"
 #include "can_radio.h"
+#include "gps.h"
 
 static constexpr int TELE_TX = 11;
 static constexpr int TELE_RX = 12;
@@ -18,6 +19,7 @@ struct Coordinate {
 };
 
 static TeleMode mode = TELE_MODE_RADIO;
+static Time lastReceived = {0};
 static Coordinate coord;
 FlashStorage(coordStorage, Coordinate); // macro defining coordStorage
 
@@ -110,9 +112,14 @@ void tele_update() {
          break;
    }
 
-   // display
-   digitalWrite(LED, received ? HIGH : LOW);
+   if(received) {
+      gps_time(lastReceived);
+      digitalWrite(LED, HIGH);
+   } else {
+      digitalWrite(LED, LOW);
+   }
 
+   // display
    int x = DISPLAY_W - 220;
    int y = DISPLAY_H - 100;
 
@@ -127,6 +134,16 @@ void tele_update() {
          display.print("Serial");
          break;
    }
+
+   y += LINE_H;
+   display.setCursor(x, y);
+
+   if(lastReceived.hour < 10) display.print('0');
+   display.print(lastReceived.hour, DEC); display.print(':');
+   if(lastReceived.minute < 10) display.print('0');
+   display.print(lastReceived.minute, DEC); display.print(':');
+   if(lastReceived.second < 10) display.print('0');
+   display.print(lastReceived.second, DEC);
 
    y += LINE_H;
    display.setCursor(x, y);

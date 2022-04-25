@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <Adafruit_GPS.h>
 
+#include "gps.h"
 #include "display.h"
 
 #define GPSSerial Serial1
@@ -88,4 +89,10 @@ float gps_magvariation() {
 
 bool gps_fixed() {
    return gps.fix;
+}
+
+void gps_time(Time &time) {
+   time.hour = gps.hour;
+   time.minute = gps.minute;
+   time.second = gps.seconds;
 }
