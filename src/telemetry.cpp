@@ -36,10 +36,10 @@ void SERCOM1_Handler() {
 
 void tele_init() {
    // Telemetry breakout serial
-   pinPeripheral(TELE_RX, PIO_SERCOM);
-   pinPeripheral(TELE_TX, PIO_SERCOM);
    TeleSerial.begin(57600);
    TeleSerial.setTimeout(200);
+   pinPeripheral(TELE_RX, PIO_SERCOM);
+   pinPeripheral(TELE_TX, PIO_SERCOM);
 
    // USB Serial
    Serial.begin(9600);
@@ -63,12 +63,12 @@ void tele_update() {
    switch(mode) {
       case TELE_MODE_RADIO:
          {
-            char buff[GPS_MSG_LEN] = {GPS_MSG_HEADER};
-            if(!TeleSerial.findUntil(buff, 1, nullptr, 0)) {
+            if(TeleSerial.available() < GPS_MSG_LEN) {
                break;
             }
 
-            if(TeleSerial.available() < GPS_MSG_LEN-1) {
+            char buff[GPS_MSG_LEN] = {GPS_MSG_HEADER};
+            if(!TeleSerial.findUntil(buff, 1, nullptr, 0)) {
                break;
             }
 
@@ -136,10 +136,13 @@ void tele_update() {
    // display time
    switch(mode) {
       case TELE_MODE_RADIO:
-         display.print("Teletry");
+         display.print("Telemetry");
          break;
       case TELE_MODE_SERIAL:
          display.print("Serial");
+         break;
+      default:
+         display.print("Unknown");
          break;
    }
 
