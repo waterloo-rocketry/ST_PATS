@@ -33,7 +33,7 @@ void gps_update() {
    }
 
    // display
-   int x = DISPLAY_W - 220;
+   int x = DISPLAY_W - 235;
    int y = 10;
 
    display.setCursor(x, y);
@@ -58,20 +58,20 @@ void gps_update() {
       float sec;
 
       parsedeg(fabs(gps.latitude_fixed), deg, min, sec);
-      snprintf(buff, sizeof(buff), "LAT% 3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lat);
+      snprintf(buff, sizeof(buff), "LAT %3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lat);
       display.print(buff);
 
       y += LINE_H;
       display.setCursor(x, y);
 
       parsedeg(fabs(gps.longitude_fixed), deg, min, sec);
-      snprintf(buff, sizeof(buff), "LON% 3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lon);
+      snprintf(buff, sizeof(buff), "LON %3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lon);
       display.print(buff);
 
       y += LINE_H;
       display.setCursor(x, y);
 
-      snprintf(buff, sizeof(buff), "ALT % 4.2fM", gps.altitude);
+      snprintf(buff, sizeof(buff), "ALT %4.2fM", gps.altitude);
       display.print(buff);
    } else {
       display.print("NO FIX");

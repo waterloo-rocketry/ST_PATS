@@ -128,7 +128,7 @@ void tele_update() {
    }
 
    // display
-   int x = DISPLAY_W - 220;
+   int x = DISPLAY_W - 235;
    int y = DISPLAY_H - 100;
 
    display.setCursor(x, y);
@@ -165,20 +165,20 @@ void tele_update() {
    float sec;
 
    parsedeg(fabs(coord.lat), deg, min, sec);
-   snprintf(buff, sizeof(buff), "LAT% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lat >= 0 ? 'N' : 'S');
+   snprintf(buff, sizeof(buff), "LAT %3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lat >= 0 ? 'N' : 'S');
    display.print(buff);
 
    y += LINE_H;
    display.setCursor(x, y);
 
    parsedeg(fabs(coord.lon), deg, min, sec);
-   snprintf(buff, sizeof(buff), "LON% 3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lon >= 0 ? 'E' : 'W');
+   snprintf(buff, sizeof(buff), "LON %3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lon >= 0 ? 'E' : 'W');
    display.print(buff);
 
    y += LINE_H;
    display.setCursor(x, y);
 
-   snprintf(buff, sizeof(buff), "ALT % 4.2fM", coord.alt);
+   snprintf(buff, sizeof(buff), "ALT %4.2fM", coord.alt);
    display.print(buff);
 }
 
