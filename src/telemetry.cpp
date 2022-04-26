@@ -64,11 +64,15 @@ void tele_update() {
       case TELE_MODE_RADIO:
          {
             char buff[GPS_MSG_LEN] = {GPS_MSG_HEADER};
-            if(!Serial.findUntil(buff, 1, nullptr, 0)) {
+            if(!TeleSerial.findUntil(buff, 1, nullptr, 0)) {
                break;
             }
 
-            if(Serial.readBytes(buff+1, GPS_MSG_LEN-1) < GPS_MSG_LEN-1) {
+            if(TeleSerial.available() < GPS_MSG_LEN-1) {
+               break;
+            }
+
+            if(TeleSerial.readBytes(buff+1, GPS_MSG_LEN-1) < GPS_MSG_LEN-1) {
                break;
             }
 
