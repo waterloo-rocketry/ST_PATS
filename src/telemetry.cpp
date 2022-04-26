@@ -63,33 +63,31 @@ void tele_update() {
    switch(mode) {
       case TELE_MODE_RADIO:
          {
-            if(TeleSerial.available() < GPS_MSG_LEN) {
-               break;
+            while(TeleSerial.available() >= GPS_MSG_LEN) {
+               char buff[GPS_MSG_LEN] = {GPS_MSG_HEADER};
+               if(!TeleSerial.findUntil(buff, 1, nullptr, 0)) {
+                  break;
+               }
+
+               if(TeleSerial.readBytes(buff+1, GPS_MSG_LEN-1) < GPS_MSG_LEN-1) {
+                  break;
+               }
+
+               uint8_t latd, latm, latdir, lond, lonm, londir;
+               uint16_t latdm, londm;
+               if(!expand_gps_message(&latd, &latm, &latdm, &latdir, &lond, &lonm, &londm, &londir, buff)) {
+                  break;
+               }
+
+               coord.lat = latd + (float) latm / 60 + (float) latdm / 600000;
+               coord.lon = lond + (float) lonm / 60 + (float) londm / 600000;
+               coord.alt = 0;
+
+               if(latdir == 'S') coord.lat = -coord.lat;
+               if(londir == 'W') coord.lon = -coord.lon;
+
+               received = true;
             }
-
-            char buff[GPS_MSG_LEN] = {GPS_MSG_HEADER};
-            if(!TeleSerial.findUntil(buff, 1, nullptr, 0)) {
-               break;
-            }
-
-            if(TeleSerial.readBytes(buff+1, GPS_MSG_LEN-1) < GPS_MSG_LEN-1) {
-               break;
-            }
-
-            uint8_t latd, latm, latdir, lond, lonm, londir;
-            uint16_t latdm, londm;
-            if(!expand_gps_message(&latd, &latm, &latdm, &latdir, &lond, &lonm, &londm, &londir, buff)) {
-               break;
-            }
-
-            coord.lat = latd + (float) latm / 60 + (float) latdm / 600000;
-            coord.lon = lond + (float) lonm / 60 + (float) londm / 600000;
-            coord.alt = 0;
-
-            if(latdir == 'S') coord.lat = -coord.lat;
-            if(londir == 'W') coord.lon = -coord.lon;
-
-            received = true;
 
             break;
          }
