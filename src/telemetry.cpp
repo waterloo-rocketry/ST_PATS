@@ -39,8 +39,11 @@ void tele_init() {
    pinPeripheral(TELE_RX, PIO_SERCOM);
    pinPeripheral(TELE_TX, PIO_SERCOM);
    TeleSerial.begin(57600);
+   TeleSerial.setTimeout(200);
 
-   // USB Serial should be initialized in setup() already
+   // USB Serial
+   Serial.begin(9600);
+   Serial.setTimeout(200);
    
    // Restore saved coordinate
    tele_load();
@@ -88,7 +91,7 @@ void tele_update() {
          }
       case TELE_MODE_SERIAL:
          while(Serial.available()) {
-            float num = Serial.parseFloat(SKIP_WHITESPACE);
+            float num = Serial.parseFloat(SKIP_ALL);
             switch(Serial.read()) {
                case 'N':
                   coord.lat = num;
@@ -139,6 +142,7 @@ void tele_update() {
    y += LINE_H;
    display.setCursor(x, y);
 
+   display.print("LAST ");
    if(lastReceived.hour < 10) display.print('0');
    display.print(lastReceived.hour, DEC); display.print(':');
    if(lastReceived.minute < 10) display.print('0');

@@ -48,9 +48,6 @@ void setup() {
    // enable float in printf
    asm(".global _printf_float");
 
-   // serial
-   Serial.begin(9600);
-
    // buttons
    int i = 0;
    for(int button : BUTTONS) {
