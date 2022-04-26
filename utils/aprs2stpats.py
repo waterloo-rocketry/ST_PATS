@@ -75,7 +75,7 @@ def main():
 
             if (
                 frame is not None and
-                #frame.source == CALLSIGN and
+                frame.source == CALLSIGN and
                 isinstance(frame, aprspy.PositionPacket)
             ):
                 if frame.latitude:
