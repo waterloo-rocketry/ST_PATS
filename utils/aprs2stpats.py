@@ -5,7 +5,7 @@ import aprspy
 
 HOST = '127.0.0.1'
 PORT = 8001
-CALLSIGN = 'VE3MYO-1'
+CALLSIGN = None
 OUTPUT = sys.stdout
 DEBUG = False
 
@@ -29,7 +29,7 @@ def parse_aprs(data):
         return aprspy.APRS.parse(frame)
     except (aprspy.exceptions.ParseError, aprspy.exceptions.UnsupportedError) as e:
         if DEBUG:
-            print(e)
+            sys.stderr.write(repr(e) + '\n')
         return None
 
 def parse_args():
@@ -75,7 +75,7 @@ def main():
 
             if (
                 frame is not None and
-                frame.source == CALLSIGN and
+                (CALLSIGN is None or frame.source == CALLSIGN) and
                 isinstance(frame, aprspy.PositionPacket)
             ):
                 if frame.latitude:
