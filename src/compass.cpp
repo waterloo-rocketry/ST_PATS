@@ -91,9 +91,9 @@ void compass_update() {
    sensors_event_t event;
    imu.getEvent(&event);
 
-   float x = fmap(event.magnetic.x, cal.minx, cal.maxx, -1, 1);
-   float y = fmap(event.magnetic.y, cal.miny, cal.maxy, -1, 1);
-   float heading = atan2(-x, y) + gps_magvariation();
+   float magx = fmap(event.magnetic.x, cal.minx, cal.maxx, -1, 1);
+   float magy = fmap(event.magnetic.y, cal.miny, cal.maxy, -1, 1);
+   float heading = atan2(-magx, magy) + gps_magvariation();
 
    // calculate target direction
    float olat, olon, tlat, tlon; // origin, target
@@ -160,18 +160,16 @@ void compass_update() {
    */
 
    // draw current heading
-   {
-      int x = 45, y = DISPLAY_H - 60;
-      char buff[8];
-      display.setCursor(x, y);
-      snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
-      display.print(buff);
+   int linex = 45, liney = DISPLAY_H - 60;
+   char buff[8];
+   display.setCursor(linex, liney);
+   snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
+   display.print(buff);
 
-      // draw target heading
-      display.setCursor(x, y + LINE_H);
-      if(gps_fixed()) {
-         snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
-         display.print(buff);
-      }
+   // draw target heading
+   display.setCursor(linex, liney + LINE_H);
+   if(gps_fixed()) {
+      snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
+      display.print(buff);
    }
 }
