@@ -4,10 +4,8 @@ import time
 import argparse
 import aprspy
 
-args = None
-
 # parse APRS AX.25 KISS frames into aprspy classes
-def parse_aprs(data):
+def parse_aprs(data, debug=False):
     def parse_callsign(data):
         # parses AX.25 callsign, see section 3.12 of http://ax25.net/AX25.2.2-Jul%2098-2.pdf
         return ''.join(chr(c >> 1) for c in data[:6]).strip() + '-' + str(data[6] >> 1 & 0xF)
@@ -27,19 +25,18 @@ def parse_aprs(data):
     # combine callsigns and data into APRS format
     frame = f"{src}>{des},{','.join(paths)}:{info}"
 
-    if args.debug:
+    if debug:
         sys.stderr.write(frame + '\n')
 
     # try parse the combined APRS frame with aprspy
     try:
         return aprspy.APRS.parse(frame)
     except (aprspy.exceptions.ParseError, aprspy.exceptions.UnsupportedError) as e:
-        if args.debug:
+        if debug:
             sys.stderr.write(repr(e) + '\n')
         return None
 
 def main():
-    global args
     ap = argparse.ArgumentParser(
         description="Connect to KISS server and output GPS coordinate in St Pats format",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -58,7 +55,7 @@ def main():
         while True:
             frame = None
             try:
-                frame = parse_aprs(s.recv(1024))
+                frame = parse_aprs(s.recv(1024), args.debug)
             except BlockingIOError:
                 time.sleep(0.2)
 
