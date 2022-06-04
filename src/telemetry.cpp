@@ -34,11 +34,9 @@ static Time lastReceived = {0};
 static Coordinate coord;
 FlashStorage(coordStorage, Coordinate); // macro defining coordStorage
 
-static void parsedeg(float degFloat, int &deg, int &min, float &sec) {
+static void parsedeg(float degFloat, int &deg, float &min) {
    deg = (int) degFloat;
-   degFloat = (degFloat - deg) * 60;
-   min = (int) degFloat;
-   sec = (degFloat - min) * 60;
+   min = (degFloat - deg) * 60;
 }
 
 void SERCOM1_Handler() {
@@ -177,18 +175,18 @@ void tele_update() {
    display.setCursor(x, y);
 
    char buff[24];
-   int deg, min;
-   float sec;
+   int deg;
+   float min;
 
-   parsedeg(fabs(coord.lat), deg, min, sec);
-   snprintf(buff, sizeof(buff), "LAT %3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lat >= 0 ? 'N' : 'S');
+   parsedeg(fabs(coord.lat), deg, min);
+   snprintf(buff, sizeof(buff), "LAT %3d\xF8%06.3f\'%c", deg % 1000, min, coord.lat >= 0 ? 'N' : 'S');
    display.print(buff);
 
    y += LINE_H;
    display.setCursor(x, y);
 
-   parsedeg(fabs(coord.lon), deg, min, sec);
-   snprintf(buff, sizeof(buff), "LON %3d\xF8%02d'%06.3f\"%c", deg % 1000, min, sec, coord.lon >= 0 ? 'E' : 'W');
+   parsedeg(fabs(coord.lon), deg, min);
+   snprintf(buff, sizeof(buff), "LON %3d\xF8%06.3f\'%c", deg % 1000, min, coord.lon >= 0 ? 'E' : 'W');
    display.print(buff);
 
    y += LINE_H;
