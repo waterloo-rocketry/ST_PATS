@@ -4,13 +4,24 @@
 
 #include "telemetry.h"
 #include "display.h"
-#include "can_radio.h"
 #include "gps.h"
 
 static constexpr int TELE_TX = 11;
 static constexpr int TELE_RX = 12;
-static constexpr int TELE_RTS = A5;
-static constexpr int TELE_CTS = A4;
+static constexpr int TELE_RTS = A4;
+static constexpr int TELE_CTS = A5;
+
+static constexpr int GPS_LEN_MAX = 27;
+static constexpr int GPS_BOARD_ID = 0x0D;
+static constexpr int GPS_LAT_ID = 0x6E0;
+static constexpr int GPS_LON_ID = 0x700;
+static constexpr int GPS_ALT_ID = 0x720;
+
+enum MessageType {
+   GPS_LATITUDE = 0x6E0,
+   GPS_LONGITUDE = 0x700,
+   GPS_ALTITUDE = 0x720,
+};
 
 static Uart TeleSerial(&sercom1, TELE_RX, TELE_TX, SERCOM_RX_PAD_3, UART_TX_PAD_0, TELE_RTS, TELE_CTS);
 
@@ -36,7 +47,7 @@ void SERCOM1_Handler() {
 
 void tele_init() {
    // Telemetry breakout serial
-   TeleSerial.begin(57600);
+   TeleSerial.begin(115200);
    TeleSerial.setTimeout(200);
    pinPeripheral(TELE_RX, PIO_SERCOM);
    pinPeripheral(TELE_TX, PIO_SERCOM);
@@ -63,30 +74,41 @@ void tele_update() {
    switch(mode) {
       case TELE_MODE_RADIO:
          {
-            while(TeleSerial.available() >= GPS_MSG_LEN) {
-               char buff[GPS_MSG_LEN] = {GPS_MSG_HEADER};
-               if(!TeleSerial.findUntil(buff, 1, nullptr, 0)) {
+            while(TeleSerial.available()) {
+               char buff[GPS_LEN_MAX+1] = {0}; // have a trailing zero
+
+               TeleSerial.readBytesUntil('\n', buff, sizeof(buff));
+
+               int sid, data[8];
+               int argc = sscanf(buff, "$%3x:%2x,%2x,%2x,%2x,%2x,%2x,%2x,%2x", &sid, data, data+1, data+2, data+3, data+4, data+5, data+6, data+7);
+               int type = sid & 0x7e0;
+               int board = sid & 0x1f;
+
+               if(board != GPS_BOARD_ID) {
                   break;
                }
 
-               if(TeleSerial.readBytes(buff+1, GPS_MSG_LEN-1) < GPS_MSG_LEN-1) {
-                  break;
+               received = false;
+
+               switch(type) {
+                  case GPS_LAT_ID:
+                     if(argc <= 8) break;
+                     coord.lat = data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000;
+                     if(data[7] == 'S') coord.lat = -coord.lat;
+                     received = true;
+                     break;
+                  case GPS_LON_ID:
+                     if(argc <= 8) break;
+                     coord.lon = data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000;
+                     if(data[7] == 'W') coord.lon = -coord.lon;
+                     received = true;
+                     break;
+                  case GPS_ALT_ID:
+                     if(argc <= 7) break;
+                     coord.alt = (data[3] << 8 | data[4]) + (float) data[5] / 100;
+                     received = true;
+                     break;
                }
-
-               uint8_t latd, latm, latdir, lond, lonm, londir;
-               uint16_t latdm, londm;
-               if(!expand_gps_message(&latd, &latm, &latdm, &latdir, &lond, &lonm, &londm, &londir, buff)) {
-                  break;
-               }
-
-               coord.lat = latd + (float) latm / 60 + (float) latdm / 600000;
-               coord.lon = lond + (float) lonm / 60 + (float) londm / 600000;
-               coord.alt = 0;
-
-               if(latdir == 'S') coord.lat = -coord.lat;
-               if(londir == 'W') coord.lon = -coord.lon;
-
-               received = true;
             }
 
             break;
