@@ -8,6 +8,7 @@
 
 static constexpr int SHARP_SS = 5;
 static const int BUTTONS[] = {A1, A2, A3};
+static constexpr int BATT = A7;
 
 Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 
@@ -58,6 +59,9 @@ void setup() {
    // led output
    pinMode(LED, OUTPUT);
 
+   // battery sensing
+   pinMode(BATT, INPUT);
+
    // display
    display.begin();
    display.cp437(true);
@@ -77,6 +81,12 @@ void loop() {
    gps_update();
    compass_update();
    tele_update();
+
+   // (value + continuity correction) / 10bit ADC * vref * voltage division
+   float vbat = (analogRead(BATT) + 0.5) / 1024 * 3.3 * 2;
+   display.setCursor(5, DISPLAY_H - 20);
+   display.print(vbat);
+   display.print("V");
 
    display.refresh();
 }
