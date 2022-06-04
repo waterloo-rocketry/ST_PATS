@@ -42,6 +42,7 @@ void gps_update() {
    y += LINE_H;
    display.setCursor(x, y);
 
+   display.print("TIME ");
    if(gps.hour < 10) display.print('0');
    display.print(gps.hour, DEC); display.print(':');
    if(gps.minute < 10) display.print('0');
@@ -71,7 +72,7 @@ void gps_update() {
       y += LINE_H;
       display.setCursor(x, y);
 
-      snprintf(buff, sizeof(buff), "ALT %4.2fM", gps.altitude);
+      snprintf(buff, sizeof(buff), "ALT  %4.2fM", gps.altitude);
       display.print(buff);
    } else {
       display.print("NO FIX");

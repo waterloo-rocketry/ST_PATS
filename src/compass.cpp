@@ -160,16 +160,16 @@ void compass_update() {
    */
 
    // draw current heading
-   int linex = 45, liney = DISPLAY_H - 70;
-   char buff[8];
+   int linex = 10, liney = DISPLAY_H - 70;
+   char buff[12];
    display.setCursor(linex, liney);
-   snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
+   snprintf(buff, sizeof(buff), "CUR %6.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
    display.print(buff);
 
    // draw target heading
    display.setCursor(linex, liney + LINE_H);
    if(gps_fixed()) {
-      snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
+      snprintf(buff, sizeof(buff), "TGT %6.2f\xF8", fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
       display.print(buff);
    }
 }
