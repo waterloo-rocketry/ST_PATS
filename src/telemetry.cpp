@@ -88,8 +88,6 @@ void tele_update() {
                   break;
                }
 
-               received = false;
-
                switch(type) {
                   case GPS_LAT_ID:
                      if(argc <= 8) break;
@@ -198,7 +196,7 @@ void tele_update() {
    y += LINE_H;
    display.setCursor(x, y);
 
-   snprintf(buff, sizeof(buff), "ALT %4.2fM", coord.alt);
+   snprintf(buff, sizeof(buff), "ALT  %4.2fM", coord.alt);
    display.print(buff);
 }
 
