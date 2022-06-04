@@ -12,7 +12,6 @@ static constexpr int TELE_RTS = A4;
 static constexpr int TELE_CTS = A5;
 
 static constexpr int GPS_LEN_MAX = 28;
-static constexpr int GPS_BOARD_ID = 0x0D;
 static constexpr int GPS_LAT_ID = 0x6E0;
 static constexpr int GPS_LON_ID = 0x700;
 static constexpr int GPS_ALT_ID = 0x720;
@@ -77,30 +76,36 @@ void tele_update() {
 
                TeleSerial.readBytesUntil('\n', buff, sizeof(buff));
 
-               int sid, data[8];
-               int argc = sscanf(buff, "$%3x:%2x,%2x,%2x,%2x,%2x,%2x,%2x,%2x", &sid, data, data+1, data+2, data+3, data+4, data+5, data+6, data+7);
+               int sid = (int) strtol(buff+1, nullptr, 16);
                int type = sid & 0x7e0;
-               int board = sid & 0x1f;
+               int data[8];
+               int len;
 
-               if(board != GPS_BOARD_ID) {
-                  continue;
+               switch(type) {
+                  case GPS_LAT_ID:
+                  case GPS_LON_ID:
+                  case GPS_ALT_ID:
+                     len = sscanf(buff, "$%*3x:%2x,%2x,%2x,%2x,%2x,%2x,%2x,%2x", data, data+1, data+2, data+3, data+4, data+5, data+6, data+7);
+                     break;
+                  default:
+                     continue;
                }
 
                switch(type) {
                   case GPS_LAT_ID:
-                     if(argc <= 8) break;
+                     if(len < 8) break;
                      coord.lat = data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000;
                      if(data[7] == 'S') coord.lat = -coord.lat;
                      received = true;
                      break;
                   case GPS_LON_ID:
-                     if(argc <= 8) break;
+                     if(len < 8) break;
                      coord.lon = data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000;
                      if(data[7] == 'W') coord.lon = -coord.lon;
                      received = true;
                      break;
                   case GPS_ALT_ID:
-                     if(argc <= 7) break;
+                     if(len < 7) break;
                      coord.alt = (data[3] << 8 | data[4]) + (float) data[5] / 100;
                      received = true;
                      break;
