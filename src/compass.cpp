@@ -160,7 +160,7 @@ void compass_update() {
    */
 
    // draw current heading
-   int linex = 45, liney = DISPLAY_H - 60;
+   int linex = 45, liney = DISPLAY_H - 70;
    char buff[8];
    display.setCursor(linex, liney);
    snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
