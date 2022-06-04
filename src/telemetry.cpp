@@ -11,7 +11,7 @@ static constexpr int TELE_RX = 12;
 static constexpr int TELE_RTS = A4;
 static constexpr int TELE_CTS = A5;
 
-static constexpr int GPS_LEN_MAX = 27;
+static constexpr int GPS_LEN_MAX = 28;
 static constexpr int GPS_BOARD_ID = 0x0D;
 static constexpr int GPS_LAT_ID = 0x6E0;
 static constexpr int GPS_LON_ID = 0x700;
@@ -85,7 +85,7 @@ void tele_update() {
                int board = sid & 0x1f;
 
                if(board != GPS_BOARD_ID) {
-                  break;
+                  continue;
                }
 
                switch(type) {
@@ -108,8 +108,6 @@ void tele_update() {
                      break;
                }
             }
-
-            break;
          }
       case TELE_MODE_SERIAL:
          while(Serial.available()) {
