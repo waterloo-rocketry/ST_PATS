@@ -74,7 +74,7 @@ void tele_update() {
    switch(mode) {
       case TELE_MODE_RADIO:
          {
-            while(TeleSerial.available()) {
+            while(TeleSerial.available() >= GPS_LEN_MAX) {
                char buff[GPS_LEN_MAX+1] = {0}; // have a trailing zero
 
                TeleSerial.readBytesUntil('\n', buff, sizeof(buff));
