@@ -32,7 +32,7 @@ void gps_update() {
 
    // display
    int x = DISPLAY_W - 235;
-   int y = 10;
+   int y = 8;
 
    display.setCursor(x, y);
 
@@ -71,6 +71,12 @@ void gps_update() {
       display.setCursor(x, y);
 
       snprintf(buff, sizeof(buff), "ALT  %4.2fM", gps.altitude);
+      display.print(buff);
+
+      y += LINE_H;
+      display.setCursor(x, y);
+
+      snprintf(buff, sizeof(buff), "#SAT %d", gps.satellites);
       display.print(buff);
    } else {
       display.print("NO FIX");

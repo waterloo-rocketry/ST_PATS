@@ -15,6 +15,7 @@ static constexpr int GPS_LEN_MAX = 28;
 static constexpr int GPS_LAT_ID = 0x6E0;
 static constexpr int GPS_LON_ID = 0x700;
 static constexpr int GPS_ALT_ID = 0x720;
+static constexpr int GPS_INFO_ID = 0x740;
 
 enum MessageType {
    GPS_LATITUDE = 0x6E0,
@@ -30,6 +31,7 @@ struct Coordinate {
 
 static TeleMode mode = TELE_MODE_RADIO;
 static Time lastReceived = {0};
+static int numSats = 0;
 static Coordinate coord;
 FlashStorage(coordStorage, Coordinate); // macro defining coordStorage
 
@@ -85,6 +87,7 @@ void tele_update() {
                   case GPS_LAT_ID:
                   case GPS_LON_ID:
                   case GPS_ALT_ID:
+                  case GPS_INFO_ID:
                      len = sscanf(buff, "$%*3x:%2x,%2x,%2x,%2x,%2x,%2x,%2x,%2x", data, data+1, data+2, data+3, data+4, data+5, data+6, data+7);
                      break;
                   default:
@@ -105,9 +108,12 @@ void tele_update() {
                      received = true;
                      break;
                   case GPS_ALT_ID:
-                     if(len < 7) break;
+                     if(len < 5) break;
                      coord.alt = (data[3] << 8 | data[4]) + (float) data[5] / 100;
                      received = true;
+                     break;
+                  case GPS_INFO_ID:
+                     numSats = data[3];
                      break;
                }
             }
@@ -131,6 +137,9 @@ void tele_update() {
                case 'M':
                   coord.alt = num;
                   break;
+               case '#':
+                  numSats = num;
+                  break;
                default:
                   break;
             }
@@ -148,7 +157,7 @@ void tele_update() {
 
    // display
    int x = DISPLAY_W - 235;
-   int y = DISPLAY_H - 100;
+   int y = DISPLAY_H - 118;
 
    display.setCursor(x, y);
 
@@ -198,6 +207,12 @@ void tele_update() {
    display.setCursor(x, y);
 
    snprintf(buff, sizeof(buff), "ALT  %4.2fM", coord.alt);
+   display.print(buff);
+
+   y += LINE_H;
+   display.setCursor(x, y);
+
+   snprintf(buff, sizeof(buff), "#SAT %d", numSats);
    display.print(buff);
 }
 
