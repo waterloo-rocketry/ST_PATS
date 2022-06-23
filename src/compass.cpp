@@ -97,7 +97,7 @@ void compass_update() {
 
    // calculate target direction
    float olat, olon, tlat, tlon; // origin, target
-   gps_coord(olat, olon);
+   gps_coord(olat, olon, tlat); // use tlat in alt, discards later
    tele_coord(tlat, tlon);
    float thead = 0, tdist = 0;
    project_azimuth(olat, olon, tlat, tlon, thead, tdist);
