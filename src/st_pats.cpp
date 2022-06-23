@@ -32,14 +32,15 @@ static void a1Handler() {
 // button 2 saves current telemetry coordinate to flash
 static void a2Handler() {
    BEGIN_DEBOUNCE;
-   tele_save();
+   tele_save(tele_get_mode());
    END_DEBOUNCE;
 }
 
 // button 3 toggles telemetry mode
 static void a3Handler() {
    BEGIN_DEBOUNCE;
-   tele_set_mode(tele_get_mode() == TELE_MODE_RADIO ? TELE_MODE_SERIAL : TELE_MODE_RADIO);
+   TeleMode mode = tele_get_mode();
+   tele_set_mode(TeleMode((int(mode) + 1) % TELE_MODE_MAX));
    END_DEBOUNCE;
 }
 

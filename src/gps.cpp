@@ -83,9 +83,10 @@ void gps_update() {
    }
 }
 
-void gps_coord(float &lat, float &lon) {
+void gps_coord(float &lat, float &lon, float &alt) {
    lat = gps.latitude_fixed / 3600000000.0 * TWO_PI;
    lon = gps.longitude_fixed / 3600000000.0 * TWO_PI;
+   alt = gps.altitude;
 }
 
 float gps_magvariation() {
