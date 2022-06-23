@@ -116,19 +116,19 @@ void tele_update() {
       switch(type) {
          case GPS_LAT_ID:
             if(len < 8) break;
-            coords[mode].lat = (data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000) / 360 * TWO_PI;
-            if(data[7] == 'S') coords[mode].lat = -coords[mode].lat;
+            coords[TELE_MODE_RADIO].lat = (data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000) / 360 * TWO_PI;
+            if(data[7] == 'S') coords[TELE_MODE_RADIO].lat = -coords[TELE_MODE_RADIO].lat;
             received = true;
             break;
          case GPS_LON_ID:
             if(len < 8) break;
-            coords[mode].lon = (data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000) / 360 * TWO_PI;
-            if(data[7] == 'W') coords[mode].lon = -coords[mode].lon;
+            coords[TELE_MODE_RADIO].lon = (data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000) / 360 * TWO_PI;
+            if(data[7] == 'W') coords[TELE_MODE_RADIO].lon = -coords[TELE_MODE_RADIO].lon;
             received = true;
             break;
          case GPS_ALT_ID:
             if(len < 5) break;
-            coords[mode].alt = (data[3] << 8 | data[4]) + (float) data[5] / 100;
+            coords[TELE_MODE_RADIO].alt = (data[3] << 8 | data[4]) + (float) data[5] / 100;
             received = true;
             break;
          case GPS_INFO_ID:
@@ -142,19 +142,19 @@ void tele_update() {
       float num = Serial.parseFloat(SKIP_ALL);
       switch(Serial.read()) {
          case 'N':
-            coords[mode].lat = num / 360 * TWO_PI;
+            coords[TELE_MODE_SERIAL].lat = num / 360 * TWO_PI;
             break;
          case 'S':
-            coords[mode].lat = -num / 360 * TWO_PI;
+            coords[TELE_MODE_SERIAL].lat = -num / 360 * TWO_PI;
             break;
          case 'E':
-            coords[mode].lon = num / 360 * TWO_PI;
+            coords[TELE_MODE_SERIAL].lon = num / 360 * TWO_PI;
             break;
          case 'W':
-            coords[mode].lon = -num / 360 * TWO_PI;
+            coords[TELE_MODE_SERIAL].lon = -num / 360 * TWO_PI;
             break;
          case 'M':
-            coords[mode].alt = num;
+            coords[TELE_MODE_SERIAL].alt = num;
             break;
          case '#':
             numSats = num;

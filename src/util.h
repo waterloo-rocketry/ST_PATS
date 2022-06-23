@@ -21,7 +21,7 @@ inline void project_azimuth(float olat, float olon, float tlat, float tlon, floa
    //rho = acos(solat * stlat + colat * ctlat * cto) * RADIUS_OF_EARTH;
 
    // use trig instead
-   double latdist = abs(tlat - olat) * 111000;
-   double londist = abs(tlon - olon) * cos((olat + tlat) * TWO_PI / 180) * 111321;
+   double latdist = abs(tlat - olat) / TWO_PI * 360 * 111000;
+   double londist = abs(tlon - olon) * cos((olat + tlat) / 2) / TWO_PI * 360 * 111321;
    rho = sqrt(latdist * latdist + londist * londist);
 }
