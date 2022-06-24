@@ -56,6 +56,8 @@ void gps_update() {
       int deg;
       float min;
 
+      Serial.print(gps.lastNMEA());
+
       parsedeg(fabs(gps.latitude_fixed), deg, min);
       snprintf(buff, sizeof(buff), "LAT %3d\xF8%06.3f\'%c", deg, min, gps.lat);
       display.print(buff);
