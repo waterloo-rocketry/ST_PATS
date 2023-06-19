@@ -5,13 +5,14 @@
 #include "telemetry.h"
 #include "display.h"
 #include "gps.h"
+#include "crc8.h"
 
 static constexpr int TELE_TX = 11;
 static constexpr int TELE_RX = 12;
 static constexpr int TELE_RTS = A4;
 static constexpr int TELE_CTS = A5;
 
-static constexpr int GPS_LEN_MAX = 28;
+static constexpr int BUFF_SIZE = 13;
 static constexpr int GPS_LAT_ID = 0x6E0;
 static constexpr int GPS_LON_ID = 0x700;
 static constexpr int GPS_ALT_ID = 0x720;
@@ -87,73 +88,154 @@ void tele_save(TeleMode mode) {
    }
 }
 
-// get gps from telemetry
-void tele_update() {
+// get gps from radio
+static bool tele_recv_radio() {
+   static enum {
+      WAITING,
+      SIZE_SID,
+      SID,
+      DATA,
+      CHECKSUM
+   } state = WAITING;
+
+   static struct {
+      uint8_t data_len;
+      uint16_t sid;
+      uint8_t data[8];
+      uint8_t checksum;
+   } msg = {0};
+
+   // circular buffer for back tracking when header is out of sync
+   static uint8_t buff[BUFF_SIZE] = {0};
+   static int head = 0, end = 0, now = 0;
+
+   // keep track of these so no need to calculate from head, end, now
+   static int count = 0;
+   static int size = 0;
+
    bool received = false;
 
    // handle telemetry radio
-   while(TeleSerial.available() >= GPS_LEN_MAX) {
-      char buff[GPS_LEN_MAX+1] = {0}; // have a trailing zero
-
-      TeleSerial.readBytesUntil('\n', buff, sizeof(buff));
-
-      int sid = (int) strtol(buff+1, nullptr, 16);
-      int type = sid & 0x7e0;
-      int data[8];
-      int len;
-
-      switch(type) {
-         case GPS_LAT_ID:
-         case GPS_LON_ID:
-         case GPS_ALT_ID:
-         case GPS_INFO_ID:
-            len = sscanf(buff, "$%*3x:%2x,%2x,%2x,%2x,%2x,%2x,%2x,%2x", data, data+1, data+2, data+3, data+4, data+5, data+6, data+7);
-            break;
-         default:
-            continue;
+   while(TeleSerial.available()) {
+      // write to buffer
+      buff[end] = TeleSerial.read();
+      end = (end + 1) % sizeof(buff);
+      if(end == head) {
+         // overflow, malformed message (too large), reset
+         state = WAITING;
       }
 
-      switch(type) {
-         case GPS_LAT_ID:
-            if(len < 8) break;
-            coords[TELE_MODE_RADIO].lat = (data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000) / 360 * TWO_PI;
-            if(data[7] == 'S') coords[TELE_MODE_RADIO].lat = -coords[TELE_MODE_RADIO].lat;
-            received = true;
-            break;
-         case GPS_LON_ID:
-            if(len < 8) break;
-            coords[TELE_MODE_RADIO].lon = (data[3] + (float) data[4] / 60 + (float) (data[5] << 8 | data[6]) / 600000) / 360 * TWO_PI;
-            if(data[7] == 'W') coords[TELE_MODE_RADIO].lon = -coords[TELE_MODE_RADIO].lon;
-            received = true;
-            break;
-         case GPS_ALT_ID:
-            if(len < 5) break;
-            coords[TELE_MODE_RADIO].alt = (data[3] << 8 | data[4]) + (float) data[5] / 100;
-            received = true;
-            break;
-         case GPS_INFO_ID:
-            numSats = data[3];
-            break;
+      // process buffer
+      // normally, just the last byte that was read is processed
+      // but in case of mismatched checksum, now is rolled back to the next
+      // header byte and bytes in buffer is re-parsed.
+      while(now != end) {
+         uint8_t b = buff[now];
+         switch(state) {
+            case WAITING:
+               if(b == 0x02) { // header byte
+                  msg.sid = 0;
+                  msg.data_len = 0;
+                  msg.checksum = 0;
+                  head = now;
+                  count = 0;
+                  state = SIZE_SID;
+               }
+               break;
+
+            case SIZE_SID:
+               size = b >> 4 & 0x0F;
+               msg.data_len = size - 4;
+               msg.sid = b << 8 & 0x0700;
+               state = SID;
+               break;
+
+            case SID:
+               msg.sid |= b;
+               state = DATA;
+               break;
+
+            case DATA:
+               msg.data[count-3] = b;
+               if(count >= size - 2) {
+                  state = CHECKSUM;
+               }
+               break;
+
+            case CHECKSUM:
+               if(msg.checksum != b) {
+                  // mismatched checksym
+                  // find the next header in buffer and rollback to that position
+                  // if no header is found, then now = end and loop exits
+                  now = head;
+                  do {
+                     now = (now + 1) % sizeof(buff);
+                  } while(now != end && buff[now] != 0x02);
+               } else {
+                  // process the parsed message
+                  switch(msg.sid & 0xFF0) {
+                     case GPS_LAT_ID:
+                        if(msg.data_len < 8) break;
+                        coords[TELE_MODE_RADIO].lat = (msg.data[3]
+                           + (float) msg.data[4] / 60
+                           + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
+                        if(msg.data[7] == 'S') coords[TELE_MODE_RADIO].lat = -coords[TELE_MODE_RADIO].lat;
+                        received = true;
+                        break;
+
+                     case GPS_LON_ID:
+                        if(msg.data_len < 8) break;
+                        coords[TELE_MODE_RADIO].lon = (msg.data[3]
+                           + (float) msg.data[4] / 60
+                           + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
+                        if(msg.data[7] == 'W') coords[TELE_MODE_RADIO].lon = -coords[TELE_MODE_RADIO].lon;
+                        received = true;
+                        break;
+
+                     case GPS_ALT_ID:
+                        if(msg.data_len < 5) break;
+                        coords[TELE_MODE_RADIO].alt = (msg.data[3] << 8 | msg.data[4]) + (float) msg.data[5] / 100;
+                        received = true;
+                        break;
+
+                     case GPS_INFO_ID:
+                        numSats = msg.data[3];
+                        break;
+                  }
+               }
+
+               state = WAITING;
+               continue; // skip the rest of processing
+         }
+
+         msg.checksum = crc8_checksum(&b, 1, msg.checksum);
+         now = (now + 1) % sizeof(buff);
+         count++;
       }
    }
 
-   // handle USB serial
+   return received;
+}
+
+// handle USB serial
+static bool tele_recv_usb() {
+   bool received = false;
    while(Serial.available()) {
       float num = Serial.parseFloat(SKIP_ALL);
       switch(Serial.read()) {
-         case 'N':
+         case 'N': case 'n':
             coords[TELE_MODE_SERIAL].lat = num / 360 * TWO_PI;
             break;
-         case 'S':
+         case 'S': case 's':
             coords[TELE_MODE_SERIAL].lat = -num / 360 * TWO_PI;
             break;
-         case 'E':
+         case 'E': case 'e':
             coords[TELE_MODE_SERIAL].lon = num / 360 * TWO_PI;
             break;
-         case 'W':
+         case 'W': case 'w':
             coords[TELE_MODE_SERIAL].lon = -num / 360 * TWO_PI;
             break;
-         case 'M':
+         case 'M': case 'm':
             coords[TELE_MODE_SERIAL].alt = num;
             break;
          case '#':
@@ -164,15 +246,10 @@ void tele_update() {
       }
       received = true;
    }
+   return received;
+}
 
-   if(received) {
-      gps_time(lastReceived);
-      digitalWrite(LED, HIGH);
-   } else {
-      digitalWrite(LED, LOW);
-   }
-
-   // display
+static void tele_display() {
    int x = DISPLAY_W - 235;
    int y = DISPLAY_H - 118;
 
@@ -234,6 +311,21 @@ void tele_update() {
 
    snprintf(buff, sizeof(buff), "#SAT %d", numSats);
    display.print(buff);
+}
+
+void tele_update() {
+   bool received = false;
+   received |= tele_recv_radio();
+   received |= tele_recv_usb();
+
+   if(received) {
+      gps_time(lastReceived);
+      digitalWrite(LED, HIGH);
+   } else {
+      digitalWrite(LED, LOW);
+   }
+
+   tele_display();
 }
 
 void tele_coord(float &lat, float &lon) {

@@ -16,7 +16,7 @@ Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 do { \
    static long pressed = 0; \
    long now = millis(); \
-   if(now - pressed > 200) {
+   if(now - pressed > 500) {
 #define END_DEBOUNCE \
    } \
    pressed = now; \
