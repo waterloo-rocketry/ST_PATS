@@ -173,7 +173,7 @@ static bool tele_recv_radio() {
                   } while(now != end && buff[now] != 0x02);
                } else {
                   // process the parsed message
-                  switch(msg.sid & 0xFF0) {
+                  switch(msg.sid & 0xFE0) {
                      case GPS_LAT_ID:
                         if(msg.data_len < 8) break;
                         coords[TELE_MODE_RADIO].lat = (msg.data[3]
