@@ -8,6 +8,7 @@
 
 static constexpr int SHARP_SS = 5;
 static const int BUTTONS[] = {A1, A2, A3};
+static constexpr int BATT = A7;
 
 Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 
@@ -15,7 +16,7 @@ Adafruit_SharpMem display(SCK, MOSI, SHARP_SS, DISPLAY_W, DISPLAY_H);
 do { \
    static long pressed = 0; \
    long now = millis(); \
-   if(now - pressed > 200) {
+   if(now - pressed > 500) {
 #define END_DEBOUNCE \
    } \
    pressed = now; \
@@ -31,14 +32,15 @@ static void a1Handler() {
 // button 2 saves current telemetry coordinate to flash
 static void a2Handler() {
    BEGIN_DEBOUNCE;
-   tele_save();
+   tele_save(tele_get_mode());
    END_DEBOUNCE;
 }
 
 // button 3 toggles telemetry mode
 static void a3Handler() {
    BEGIN_DEBOUNCE;
-   tele_set_mode(tele_get_mode() == TELE_MODE_RADIO ? TELE_MODE_SERIAL : TELE_MODE_RADIO);
+   TeleMode mode = tele_get_mode();
+   tele_set_mode(TeleMode((int(mode) + 1) % TELE_MODE_MAX));
    END_DEBOUNCE;
 }
 
@@ -57,6 +59,9 @@ void setup() {
 
    // led output
    pinMode(LED, OUTPUT);
+
+   // battery sensing
+   pinMode(BATT, INPUT);
 
    // display
    display.begin();
@@ -77,6 +82,12 @@ void loop() {
    gps_update();
    compass_update();
    tele_update();
+
+   // (value + continuity correction) / 10bit ADC * vref * voltage division
+   float vbat = (analogRead(BATT) + 0.5) / 1024 * 3.3 * 2;
+   display.setCursor(5, DISPLAY_H - 20);
+   display.print(vbat);
+   display.print("V");
 
    display.refresh();
 }

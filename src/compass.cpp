@@ -97,9 +97,10 @@ void compass_update() {
 
    // calculate target direction
    float olat, olon, tlat, tlon; // origin, target
-   gps_coord(olat, olon);
+   gps_coord(olat, olon, tlat); // use tlat in alt, discards later
    tele_coord(tlat, tlon);
-   float targetHeading = heading_from(olat, olon, tlat, tlon);
+   float thead = 0, tdist = 0;
+   project_azimuth(olat, olon, tlat, tlon, thead, tdist);
 
    // display
    static constexpr int fontScale = 2;
@@ -134,12 +135,12 @@ void compass_update() {
    if(gps_fixed()) {
       for(size_t i = 0; i < sizeof(arrow) / sizeof(arrow[0]); i++) {
          display.fillTriangle(
-            centerX - arrow[i][0][1] * sin(arrow[i][0][0] + heading - targetHeading),
-            centerY - arrow[i][0][1] * cos(arrow[i][0][0] + heading - targetHeading),
-            centerX - arrow[i][1][1] * sin(arrow[i][1][0] + heading - targetHeading),
-            centerY - arrow[i][1][1] * cos(arrow[i][1][0] + heading - targetHeading),
-            centerX - arrow[i][2][1] * sin(arrow[i][2][0] + heading - targetHeading),
-            centerY - arrow[i][2][1] * cos(arrow[i][2][0] + heading - targetHeading),
+            centerX - arrow[i][0][1] * sin(arrow[i][0][0] + heading - thead),
+            centerY - arrow[i][0][1] * cos(arrow[i][0][0] + heading - thead),
+            centerX - arrow[i][1][1] * sin(arrow[i][1][0] + heading - thead),
+            centerY - arrow[i][1][1] * cos(arrow[i][1][0] + heading - thead),
+            centerX - arrow[i][2][1] * sin(arrow[i][2][0] + heading - thead),
+            centerY - arrow[i][2][1] * cos(arrow[i][2][0] + heading - thead),
             0
          );
       }
@@ -160,16 +161,28 @@ void compass_update() {
    */
 
    // draw current heading
-   int linex = 45, liney = DISPLAY_H - 60;
-   char buff[8];
+   int linex = 10, liney = DISPLAY_H - 75;
+   char buff[13];
    display.setCursor(linex, liney);
-   snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
+   snprintf(buff, sizeof(buff), "CUR %7.2f\xF8", fmod((heading + TWO_PI) / TWO_PI * 360.0, 360));
    display.print(buff);
 
+   liney += LINE_H;
+   display.setCursor(linex, liney);
+
    // draw target heading
-   display.setCursor(linex, liney + LINE_H);
    if(gps_fixed()) {
-      snprintf(buff, sizeof(buff), "%6.2f\xF8", fmod((targetHeading + TWO_PI) / TWO_PI * 360.0, 360));
+      snprintf(buff, sizeof(buff), "TGT %7.2f\xF8", fmod((thead + TWO_PI) / TWO_PI * 360.0, 360));
+      display.print(buff);
+
+      liney += LINE_H;
+      display.setCursor(linex, liney);
+
+      if(tdist >= 10000) {
+         snprintf(buff, sizeof(buff), "TGT %6.2fkm", tdist / 1000);
+      } else {
+         snprintf(buff, sizeof(buff), "TGT %7.2fm", tdist);
+      }
       display.print(buff);
    }
 }

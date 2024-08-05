@@ -5,7 +5,7 @@ struct Time {
 
 void gps_init();
 void gps_update();
-void gps_coord(float &lat, float &lon); //radians
+void gps_coord(float &lat, float &lon, float &alt); // rads, rads, m
 bool gps_fixed();
 void gps_time(Time &time);
 float gps_magvariation(); // radians

@@ -8,12 +8,10 @@
 
 static Adafruit_GPS gps(&GPSSerial);
 
-static void parsedeg(int32_t degFixed, int &deg, int &min, float &sec) {
+static void parsedeg(int32_t degFixed, int &deg, float &min) {
    deg = degFixed / 10000000;
    degFixed = degFixed % 10000000 * 60;
-   min = degFixed / 10000000;
-   degFixed = degFixed % 10000000 * 60;
-   sec = degFixed / 10000000.0;
+   min = (float) degFixed / 10000000;
 }
 
 void gps_init() {
@@ -34,7 +32,7 @@ void gps_update() {
 
    // display
    int x = DISPLAY_W - 235;
-   int y = 10;
+   int y = 8;
 
    display.setCursor(x, y);
 
@@ -42,6 +40,7 @@ void gps_update() {
    y += LINE_H;
    display.setCursor(x, y);
 
+   display.print("TIME ");
    if(gps.hour < 10) display.print('0');
    display.print(gps.hour, DEC); display.print(':');
    if(gps.minute < 10) display.print('0');
@@ -54,33 +53,42 @@ void gps_update() {
 
    if(gps.fix) {
       char buff[20];
-      int deg, min;
-      float sec;
+      int deg;
+      float min;
 
-      parsedeg(fabs(gps.latitude_fixed), deg, min, sec);
-      snprintf(buff, sizeof(buff), "LAT %3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lat);
+      Serial.print(gps.lastNMEA());
+
+      parsedeg(fabs(gps.latitude_fixed), deg, min);
+      snprintf(buff, sizeof(buff), "LAT %3d\xF8%06.3f\'%c", deg, min, gps.lat);
       display.print(buff);
 
       y += LINE_H;
       display.setCursor(x, y);
 
-      parsedeg(fabs(gps.longitude_fixed), deg, min, sec);
-      snprintf(buff, sizeof(buff), "LON %3d\xF8%02d'%06.3f\"%c", deg, min, sec, gps.lon);
+      parsedeg(fabs(gps.longitude_fixed), deg, min);
+      snprintf(buff, sizeof(buff), "LON %3d\xF8%06.3f\'%c", deg, min, gps.lon);
       display.print(buff);
 
       y += LINE_H;
       display.setCursor(x, y);
 
-      snprintf(buff, sizeof(buff), "ALT %4.2fM", gps.altitude);
+      snprintf(buff, sizeof(buff), "ALT  %4.2fM", gps.altitude);
+      display.print(buff);
+
+      y += LINE_H;
+      display.setCursor(x, y);
+
+      snprintf(buff, sizeof(buff), "#SAT %d", gps.satellites);
       display.print(buff);
    } else {
       display.print("NO FIX");
    }
 }
 
-void gps_coord(float &lat, float &lon) {
+void gps_coord(float &lat, float &lon, float &alt) {
    lat = gps.latitude_fixed / 3600000000.0 * TWO_PI;
    lon = gps.longitude_fixed / 3600000000.0 * TWO_PI;
+   alt = gps.altitude;
 }
 
 float gps_magvariation() {
