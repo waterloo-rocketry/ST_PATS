@@ -174,29 +174,45 @@ static bool tele_recv_radio() {
                } else {
                   // process the parsed message
                   switch(msg.sid & 0xFE0) {
-                     case GPS_LAT_ID:
+                     case GPS_LAT_ID: {
                         if(msg.data_len < 8) break;
-                        coords[TELE_MODE_RADIO].lat = (msg.data[3]
+                        float lat = (msg.data[3]
                            + (float) msg.data[4] / 60
                            + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
-                        if(msg.data[7] == 'S') coords[TELE_MODE_RADIO].lat = -coords[TELE_MODE_RADIO].lat;
-                        received = true;
+                        if(lat != 0.0) {
+                           if(msg.data[7] == 'S')
+                              coords[TELE_MODE_RADIO].lat = -lat;
+                           else
+                              coords[TELE_MODE_RADIO].lat = lat;
+                           received = true;
+                        }
                         break;
+                     }
 
-                     case GPS_LON_ID:
+                     case GPS_LON_ID: {
                         if(msg.data_len < 8) break;
-                        coords[TELE_MODE_RADIO].lon = (msg.data[3]
+                        float lon = (msg.data[3]
                            + (float) msg.data[4] / 60
                            + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
-                        if(msg.data[7] == 'W') coords[TELE_MODE_RADIO].lon = -coords[TELE_MODE_RADIO].lon;
-                        received = true;
+                        if(lon != 0.0) {
+                           if(msg.data[7] == 'W')
+                              coords[TELE_MODE_RADIO].lon = -lon;
+                           else
+                              coords[TELE_MODE_RADIO].lon = lon;
+                           received = true;
+                        }
                         break;
+                     }
 
-                     case GPS_ALT_ID:
+                     case GPS_ALT_ID: {
                         if(msg.data_len < 5) break;
-                        coords[TELE_MODE_RADIO].alt = (msg.data[3] << 8 | msg.data[4]) + (float) msg.data[5] / 100;
-                        received = true;
+                        float alt = (msg.data[3] << 8 | msg.data[4]) + (float) msg.data[5] / 100;
+                        if(alt != 0.0) {
+                           coords[TELE_MODE_RADIO].alt = alt;
+                           received = true;
+                        }
                         break;
+                     }
 
                      case GPS_INFO_ID:
                         numSats = msg.data[3];
