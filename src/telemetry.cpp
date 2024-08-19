@@ -17,6 +17,7 @@ static constexpr int GPS_LAT_ID = 0x6E0;
 static constexpr int GPS_LON_ID = 0x700;
 static constexpr int GPS_ALT_ID = 0x720;
 static constexpr int GPS_INFO_ID = 0x740;
+static constexpr int BOARD_ID_PROCESSOR = 0x0F;
 
 enum MessageType {
    GPS_LATITUDE = 0x6E0,
@@ -180,10 +181,18 @@ static bool tele_recv_radio() {
                            + (float) msg.data[4] / 60
                            + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
                         if(lat != 0.0) {
-                           if(msg.data[7] == 'S')
-                              coords[TELE_MODE_RADIO].lat = -lat;
-                           else
-                              coords[TELE_MODE_RADIO].lat = lat;
+                           if((msg.sid & 0x1F) == BOARD_ID_PROCESSOR) {
+                              // workaround: processor board has GPS coordinates flipped
+                              if(msg.data[7] == 'S')
+                                 coords[TELE_MODE_RADIO].lon = -lat;
+                              else
+                                 coords[TELE_MODE_RADIO].lon = lat;
+                           } else {
+                              if(msg.data[7] == 'S')
+                                 coords[TELE_MODE_RADIO].lat = -lat;
+                              else
+                                 coords[TELE_MODE_RADIO].lat = lat;
+                           }
                            received = true;
                         }
                         break;
@@ -195,10 +204,18 @@ static bool tele_recv_radio() {
                            + (float) msg.data[4] / 60
                            + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
                         if(lon != 0.0) {
-                           if(msg.data[7] == 'W')
-                              coords[TELE_MODE_RADIO].lon = -lon;
-                           else
-                              coords[TELE_MODE_RADIO].lon = lon;
+                           if((msg.sid & 0x1F) == BOARD_ID_PROCESSOR) {
+                              // workaround: processor board has GPS coordinates flipped
+                              if(msg.data[7] == 'W')
+                                 coords[TELE_MODE_RADIO].lat = -lon;
+                              else
+                                 coords[TELE_MODE_RADIO].lat = lon;
+                           } else {
+                              if(msg.data[7] == 'W')
+                                 coords[TELE_MODE_RADIO].lon = -lon;
+                              else
+                                 coords[TELE_MODE_RADIO].lon = lon;
+                           }
                            received = true;
                         }
                         break;
