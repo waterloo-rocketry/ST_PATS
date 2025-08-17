@@ -12,7 +12,7 @@ static constexpr int TELE_RX = 12;
 static constexpr int TELE_RTS = A4;
 static constexpr int TELE_CTS = A5;
 
-static constexpr int BUFF_SIZE = 13;
+static constexpr int BUFF_SIZE = 15;
 static constexpr int GPS_LAT_ID = 0x016;
 static constexpr int GPS_LON_ID = 0x017;
 static constexpr int GPS_ALT_ID = 0x018;
@@ -112,14 +112,13 @@ static bool tele_recv_radio() {
 
    // keep track of these so no need to calculate from head, end, now
    static int count = 0;
-   static int size = 0;
-
    bool received = false;
 
    // handle telemetry radio
    while(TeleSerial.available()) {
       // write to buffer
       buff[end] = TeleSerial.read();
+      Serial.write(buff[end]);
       end = (end + 1) % sizeof(buff);
       if(end == head) {
          // overflow, malformed message (too large), reset
@@ -152,15 +151,9 @@ static bool tele_recv_radio() {
                break;
 
             case SID:
-               if(count==2);
-               else if (count==3||count==4||count==5)
-               {
-                  msg.sid |= (uint_32t)b <<((5-count)*8);
-               }
-               
-               if(count==5)
-               {
-               state = DATA;
+               msg.sid = (msg.sid << 8) | b;
+               if(count >= 5) {
+                  state = DATA;
                }
                break;
 
@@ -182,7 +175,7 @@ static bool tele_recv_radio() {
                   } while(now != end && buff[now] != 0x02);
                } else {
                   // process the parsed message
-                  switch((msg.sid>>18) & 0x1FF) { //extracts bits 18-26 as number
+                  switch((msg.sid>>18) & 0x1FF) { //extracts message type from bits 18-26
                      case GPS_LAT_ID:
                         if(msg.data_len < 7) break;
                         coords[TELE_MODE_RADIO].lat = (msg.data[2]
@@ -202,8 +195,8 @@ static bool tele_recv_radio() {
                         break;
 
                      case GPS_ALT_ID:
-                        if(msg.data_len < ) break;
-                        coords[TELE_MODE_RADIO].alt = (float)((uint_3t) msg.data[2]<<24 | msg.data[3] << 16 | msg.data[4]<<8 | msg.data[5])/ 100;
+                        if(msg.data_len < 6) break;
+                        coords[TELE_MODE_RADIO].alt = (float)((uint32_t) msg.data[2]<<24 | msg.data[3] << 16 | msg.data[4]<<8 | msg.data[5])/ 100;
                         received = true;
                         break;
 
