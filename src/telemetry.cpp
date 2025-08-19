@@ -224,6 +224,8 @@ static bool tele_recv_radio() {
 static bool tele_recv_usb() {
    bool received = false;
    while(Serial.available()) {
+      TeleSerial.write(Serial.read());
+      continue;
       float num = Serial.parseFloat(SKIP_ALL);
       switch(Serial.read()) {
          case 'N': case 'n':
