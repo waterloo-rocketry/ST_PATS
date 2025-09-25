@@ -12,17 +12,17 @@ static constexpr int TELE_RX = 12;
 static constexpr int TELE_RTS = A4;
 static constexpr int TELE_CTS = A5;
 
-static constexpr int BUFF_SIZE = 13;
-static constexpr int GPS_LAT_ID = 0x6E0;
-static constexpr int GPS_LON_ID = 0x700;
-static constexpr int GPS_ALT_ID = 0x720;
-static constexpr int GPS_INFO_ID = 0x740;
+static constexpr int BUFF_SIZE = 15;
+static constexpr int GPS_LAT_ID = 0x016;
+static constexpr int GPS_LON_ID = 0x017;
+static constexpr int GPS_ALT_ID = 0x018;
+static constexpr int GPS_INFO_ID = 0x019;
 
-enum MessageType {
-   GPS_LATITUDE = 0x6E0,
+/* enum MessageType {
+   GPS_LATITUDE = 0x6E0,//need to check if these should match GPS-LAT_ID
    GPS_LONGITUDE = 0x700,
    GPS_ALTITUDE = 0x720,
-};
+}; */
 
 static Uart TeleSerial(&sercom1, TELE_RX, TELE_TX, SERCOM_RX_PAD_3, UART_TX_PAD_0, TELE_RTS, TELE_CTS);
 
@@ -92,7 +92,7 @@ void tele_save(TeleMode mode) {
 static bool tele_recv_radio() {
    static enum {
       WAITING,
-      SIZE_SID,
+      SIZE,
       SID,
       DATA,
       CHECKSUM
@@ -100,7 +100,8 @@ static bool tele_recv_radio() {
 
    static struct {
       uint8_t data_len;
-      uint16_t sid;
+      uint8_t len;
+      uint32_t sid;
       uint8_t data[8];
       uint8_t checksum;
    } msg = {0};
@@ -111,14 +112,13 @@ static bool tele_recv_radio() {
 
    // keep track of these so no need to calculate from head, end, now
    static int count = 0;
-   static int size = 0;
-
    bool received = false;
 
    // handle telemetry radio
    while(TeleSerial.available()) {
       // write to buffer
       buff[end] = TeleSerial.read();
+      Serial.write(buff[end]);
       end = (end + 1) % sizeof(buff);
       if(end == head) {
          // overflow, malformed message (too large), reset
@@ -136,28 +136,30 @@ static bool tele_recv_radio() {
                if(b == 0x02) { // header byte
                   msg.sid = 0;
                   msg.data_len = 0;
+                  msg.len=0;
                   msg.checksum = 0;
                   head = now;
                   count = 0;
-                  state = SIZE_SID;
+                  state = SIZE;
                }
                break;
 
-            case SIZE_SID:
-               size = b >> 4 & 0x0F;
-               msg.data_len = size - 4;
-               msg.sid = b << 8 & 0x0700;
+            case SIZE:
+               msg.len = b & 0x0F;
+               msg.data_len=msg.len-7;
                state = SID;
                break;
 
             case SID:
-               msg.sid |= b;
-               state = DATA;
+               msg.sid = (msg.sid << 8) | b;
+               if(count >= 5) {
+                  state = DATA;
+               }
                break;
 
             case DATA:
-               msg.data[count-3] = b;
-               if(count >= size - 2) {
+               msg.data[count-6] = b;
+               if(count >= msg.len - 2) {
                   state = CHECKSUM;
                }
                break;
@@ -173,33 +175,33 @@ static bool tele_recv_radio() {
                   } while(now != end && buff[now] != 0x02);
                } else {
                   // process the parsed message
-                  switch(msg.sid & 0xFE0) {
+                  switch((msg.sid>>18) & 0x1FF) { //extracts message type from bits 18-26
                      case GPS_LAT_ID:
-                        if(msg.data_len < 8) break;
-                        coords[TELE_MODE_RADIO].lat = (msg.data[3]
-                           + (float) msg.data[4] / 60
-                           + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
-                        if(msg.data[7] == 'S') coords[TELE_MODE_RADIO].lat = -coords[TELE_MODE_RADIO].lat;
+                        if(msg.data_len < 7) break;
+                        coords[TELE_MODE_RADIO].lat = (msg.data[2]
+                           + (float) msg.data[3] / 60
+                           + (float) (msg.data[4] << 8 | msg.data[5]) / 600000) / 360 * TWO_PI;
+                        if(msg.data[6] == 'S') coords[TELE_MODE_RADIO].lat = -coords[TELE_MODE_RADIO].lat;
                         received = true;
                         break;
 
                      case GPS_LON_ID:
-                        if(msg.data_len < 8) break;
-                        coords[TELE_MODE_RADIO].lon = (msg.data[3]
-                           + (float) msg.data[4] / 60
-                           + (float) (msg.data[5] << 8 | msg.data[6]) / 600000) / 360 * TWO_PI;
-                        if(msg.data[7] == 'W') coords[TELE_MODE_RADIO].lon = -coords[TELE_MODE_RADIO].lon;
+                        if(msg.data_len < 7) break;
+                        coords[TELE_MODE_RADIO].lon = (msg.data[2]
+                           + (float) msg.data[3] / 60
+                           + (float) (msg.data[4] << 8 | msg.data[5]) / 600000) / 360 * TWO_PI;
+                        if(msg.data[6] == 'W') coords[TELE_MODE_RADIO].lon = -coords[TELE_MODE_RADIO].lon;
                         received = true;
                         break;
 
                      case GPS_ALT_ID:
-                        if(msg.data_len < 5) break;
-                        coords[TELE_MODE_RADIO].alt = (msg.data[3] << 8 | msg.data[4]) + (float) msg.data[5] / 100;
+                        if(msg.data_len < 6) break;
+                        coords[TELE_MODE_RADIO].alt = (float)((uint32_t) msg.data[2]<<24 | msg.data[3] << 16 | msg.data[4]<<8 | msg.data[5])/ 100;
                         received = true;
                         break;
 
                      case GPS_INFO_ID:
-                        numSats = msg.data[3];
+                        numSats = msg.data[2];
                         break;
                   }
                }
@@ -217,10 +219,13 @@ static bool tele_recv_radio() {
    return received;
 }
 
+//Self-Comment for Pranav - Made change required up till here
 // handle USB serial
 static bool tele_recv_usb() {
    bool received = false;
    while(Serial.available()) {
+      TeleSerial.write(Serial.read());
+      continue;
       float num = Serial.parseFloat(SKIP_ALL);
       switch(Serial.read()) {
          case 'N': case 'n':
